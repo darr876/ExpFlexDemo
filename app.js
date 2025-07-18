@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Copy, Plus, Trash2, Save, Upload, RotateCcw } from 'lucide-react';
+const { useState, useCallback } = React;
+const { Copy, Plus, Trash2, Save, Upload, RotateCcw } = lucide;
 
 const ExpenseReportApp = () => {
   const [purpose, setPurpose] = useState('');
