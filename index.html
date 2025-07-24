@@ -647,13 +647,10 @@
                 
                 <div class="form-group">
                     <label>Justification</label>
-                    <input type="text" class="form-input expense-justification" value="${data[6] || ''}" placeholder="Reason for this expense">
+                    <input type="text" class="form-input expense-justification" value="${data[6] || ''}" placeholder="Reason for this expense" onkeydown="handleTabToAddRow(event)">
                 </div>
                 
-                <div class="form-group">
-                    <label>Additional Information</label>
-                    <input type="text" class="form-input expense-additional" value="${data[7] || ''}" placeholder="Any additional details" onkeydown="handleTabToAddRow(event)">
-                </div>
+                <input type="hidden" class="expense-additional" value="${data[7] || ''}">
             `;
             
             container.appendChild(expenseDiv);
