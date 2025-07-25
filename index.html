@@ -886,45 +886,67 @@
         // PWA Service Worker Registration
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
+                // Create service worker as data URL instead of blob
                 const swCode = `
                     const CACHE_NAME = 'expenseflex-v1';
-                    const urlsToCache = [
-                        '/',
-                        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
-                    ];
-
+                    
                     self.addEventListener('install', function(event) {
-                        event.waitUntil(
-                            caches.open(CACHE_NAME)
-                                .then(function(cache) {
-                                    return cache.addAll(urlsToCache);
-                                })
-                        );
+                        console.log('Service Worker installing...');
+                        self.skipWaiting();
+                    });
+
+                    self.addEventListener('activate', function(event) {
+                        console.log('Service Worker activating...');
+                        event.waitUntil(self.clients.claim());
                     });
 
                     self.addEventListener('fetch', function(event) {
-                        event.respondWith(
-                            caches.match(event.request)
-                                .then(function(response) {
-                                    // Return cached version or fetch from network
-                                    return response || fetch(event.request);
-                                }
-                            )
-                        );
+                        // Only handle same-origin requests
+                        if (event.request.url.startsWith(self.location.origin)) {
+                            event.respondWith(
+                                caches.open(CACHE_NAME).then(function(cache) {
+                                    return cache.match(event.request).then(function(response) {
+                                        if (response) {
+                                            return response;
+                                        }
+                                        
+                                        return fetch(event.request).then(function(fetchResponse) {
+                                            // Cache successful responses
+                                            if (fetchResponse.status === 200) {
+                                                cache.put(event.request, fetchResponse.clone());
+                                            }
+                                            return fetchResponse;
+                                        }).catch(function() {
+                                            // Return a basic offline page for navigation requests
+                                            if (event.request.mode === 'navigate') {
+                                                return new Response('App is offline', {
+                                                    status: 200,
+                                                    headers: { 'Content-Type': 'text/plain' }
+                                                });
+                                            }
+                                        });
+                                    });
+                                })
+                            );
+                        }
                     });
                 `;
                 
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
+                // Convert to data URL
+                const dataUrl = 'data:application/javascript,' + encodeURIComponent(swCode);
                 
-                navigator.serviceWorker.register(swUrl)
+                navigator.serviceWorker.register(dataUrl)
                     .then(function(registration) {
                         console.log('ServiceWorker registration successful');
-                        showNotification('App ready for offline use!', 'info');
+                        showNotification('App is now ready for offline use!', 'info');
                     })
                     .catch(function(err) {
                         console.log('ServiceWorker registration failed: ', err);
+                        // Fallback - try to use app without service worker
+                        showNotification('App loaded (online mode only)', 'warning');
                     });
+            } else {
+                showNotification('App loaded (service workers not supported)', 'warning');
             }
         }
 
