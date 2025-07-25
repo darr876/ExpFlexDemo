@@ -883,71 +883,23 @@
             registerServiceWorker();
         });
 
-        // PWA Service Worker Registration
+        // PWA Setup - For Real Implementation
         function registerServiceWorker() {
+            showNotification('💡 To enable offline mode: Save this HTML file and create a service worker!', 'info');
+            
+            // This would work if you save the HTML file and create sw.js:
+            /*
             if ('serviceWorker' in navigator) {
-                // Create service worker as data URL instead of blob
-                const swCode = `
-                    const CACHE_NAME = 'expenseflex-v1';
-                    
-                    self.addEventListener('install', function(event) {
-                        console.log('Service Worker installing...');
-                        self.skipWaiting();
-                    });
-
-                    self.addEventListener('activate', function(event) {
-                        console.log('Service Worker activating...');
-                        event.waitUntil(self.clients.claim());
-                    });
-
-                    self.addEventListener('fetch', function(event) {
-                        // Only handle same-origin requests
-                        if (event.request.url.startsWith(self.location.origin)) {
-                            event.respondWith(
-                                caches.open(CACHE_NAME).then(function(cache) {
-                                    return cache.match(event.request).then(function(response) {
-                                        if (response) {
-                                            return response;
-                                        }
-                                        
-                                        return fetch(event.request).then(function(fetchResponse) {
-                                            // Cache successful responses
-                                            if (fetchResponse.status === 200) {
-                                                cache.put(event.request, fetchResponse.clone());
-                                            }
-                                            return fetchResponse;
-                                        }).catch(function() {
-                                            // Return a basic offline page for navigation requests
-                                            if (event.request.mode === 'navigate') {
-                                                return new Response('App is offline', {
-                                                    status: 200,
-                                                    headers: { 'Content-Type': 'text/plain' }
-                                                });
-                                            }
-                                        });
-                                    });
-                                })
-                            );
-                        }
-                    });
-                `;
-                
-                // Convert to data URL
-                const dataUrl = 'data:application/javascript,' + encodeURIComponent(swCode);
-                
-                navigator.serviceWorker.register(dataUrl)
+                navigator.serviceWorker.register('/sw.js')
                     .then(function(registration) {
-                        console.log('ServiceWorker registration successful');
-                        showNotification('App is now ready for offline use!', 'info');
+                        console.log('ServiceWorker registered');
+                        showNotification('App ready for offline use!', 'success');
                     })
                     .catch(function(err) {
                         console.log('ServiceWorker registration failed: ', err);
-                        // Fallback - try to use app without service worker
-                        showNotification('App loaded (online mode only)', 'warning');
                     });
-            } else {
-                showNotification('App loaded (service workers not supported)', 'warning');
             }
+            */
         }
 
         function checkForSavedDraft() {
