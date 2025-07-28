@@ -4,13 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExpenseFlex - Modern Expense Tracker</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#6366f1">
-    <meta name="description" content="Modern expense tracking and reporting made simple">
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkV4cGVuc2VGbGV4IC0gTW9kZXJuIEV4cGVuc2UgVHJhY2tlciIsCiAgInNob3J0X25hbWUiOiAiRXhwZW5zZUZsZXgiLAogICJkZXNjcmlwdGlvbiI6ICJNb2Rlcm4gZXhwZW5zZSB0cmFja2luZyBhbmQgcmVwb3J0aW5nIG1hZGUgc2ltcGxlIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICIjNjM2NmYxIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M00zUnZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQXlOQ0F5TkNJZ2FHVnBaMmgwUFNJeU5EQndlQ0lnZDJsa2RHZzlJakkwTUhCNElpQm1hV3hzUFNJak5qTTJObVl4SWo0OGNHRjBhQ0JrUFNKdE1USXVNVFk0TFRJME1qUmhOall1TmpjeUxUSXVNalU0SWk4K1BIQmhkR2dnWkQwaVRURG9MVGhJTmpVMGJERjJORVJCTWpKSU5URm1iREZqTVMxVE9UWnNNekEwUWpsS01sWkxPVGhJVFZGd01FdE1OREE0VGpGUWMyVTBOakZoTWpOaU1ERnZOVFZqT1Y5ek56RmZQbmxITkRWb2RVSm1kWFkwVmpoWmVHVnliall4WkRKMllXbE5ieTFoZUZsallrNDBPVGw2VjJkcGMwVnhRV0V6YjBOMWVpdHNhVzFOV1dGQ1pEZHdWVVpxVVhvOUlpOCtQSEJoZEdnZ1pEMGlUVEl5TGpNMU1DQTNMalUyTTJnemJEa3VNakE0TFRFME9YVm9MVEV5ZEdjNU5qRTJOR0UzTGpJeU5pQjJkRE5zTXpZdU9EUXhhall1TVRoRWFuRndlVEkzYzNBeVRXeDBieTQyTWpNeklESXVOemc0TGpVek1UYzJhakY2VERKMGJETXVPREV4YzBFMExqSXlOaTQyTWpNZ01URXVNekV2YVdGM2EwSjZRbTUwZG1wUFZHOWpWbG94UkdONGVIbHZlRkJhUTJ0cVdrOWtjMVZzUm5wVlZsVndTa2hWU2pGWlpuVjFiVUZ2YlRnS2FTNWhZWEJwYmlBeUxqRmNiVEk1TGpNMUlEWXVOVFpqTFRJdU16azJOUzFpSURFMUlESXVOelUyY2pnNElESTVMak0xWTJReE5EazJOQzR4T0RJNU9UZ2dNVFk0T0M0eE9Ea3lMemxQYm5VYVppMHlMak16TWkweUxqQXpNaTF4YjJGdWNDbGNiREkyTGpJd09TMHZjekEyTGpVME55MXJOall1TVRWaU5ERXlOell2YzJSRUxuVmZOV0pKVFhwbVZYSmtWVlZ3UWs5WFZsUmxWM1JxYkRCaVkwVlhNa1k0THpnbk1VdGhabU5PVDJ4Mk5EbG9WQzFvUkdoeFJsZFZUak5hU2tvNU0yVXdWMWR1VTBGV2VEWm9WbGx6YVRsd2QyRnpaVDBpSWo0OEwzTjJaejQ9IiwKICAgICAgInNpemVzIjogIjI0MHgyNDAiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgaGVpZ2h0PSIyNDBweCIgd2lkdGg9IjI0MHB4IiBmaWxsPSIjNjM2NmYxIj48cGF0aCBkPSJtMTIuMTY4LTI0MjRhNjYuNjcyLTIuMjU4Ii8+PHBhdGggZD0iTTAtOEg2NTRsVjRRQTIySDF5ZmwxYzEtUzk2bDMwNEI5SjJWTDk4SFRRcDBLTDQwOE4xUHNlNDYxYTIzYjAxbzU1YzlfczUxX3lHNDVodUJmdXY0VjhZeGVyYjYxZDJ2YWlNby1heFljYk40OTl6V2dpc0VxQWEzb0N1eitsbWlOV1lBYkQ3cFVGalFqOSIvPjxwYXRoIGQ9Ik0yMi4zNTAgNy41NjNhemwuc3Byb2J6VnF0VklOVXFPdGppVGVxYlYtU2QzLTUuNlMxLjE5LTUuOVNxaVFtQW9ZNUljdElKb3Q1TDZJWnFxbVZKUWxsOVZscjFUV2MzcFFOdDJXSU9sZGZrWWgxZXFaMVI3TGFqakNEZ3ZKaVUtdVJZck1mbUlTaVFodEt5ZnV1QnJvbTgKaSBhcGkgMi4xY20yOS4zNSA2LjU2Yy0yLjM5NjUtYjE1LTIuNzU2cjg4IDI5LjM1YzE0OTY0LjE4Mjk5OGcxNjg4LjE4OTItOVB7dnVhXG5mLTIuMzMyLTIuMDMyLXFvYW5zKWNsbTI2LjIwOS92czA2LjU0Ny1rNjYuMTViNDEyNzYvcmRkLnVfNWJJTXpmVXJkVVVwQk9XVlRlVzRxbDBiY0VXMkY4LzgmMUtlamNOT2x2NDloVC1oRGhxRldVTjNaU0o5MmUwV1duU0FWeDZoVlkzaVdwc2FzZDBpIi8+PC9zdmc+">
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -473,7 +466,7 @@
                         <i class="fas fa-align-left"></i>
                         Purpose of Expense Report
                     </label>
-                    <textarea id="purpose" class="form-input" placeholder="Describe the purpose of these expenses..."></textarea>
+                    <input type="text" id="purpose" class="form-input" placeholder="Describe the purpose of these expenses...">
                 </div>
 
                 <div class="form-row">
@@ -880,27 +873,7 @@
             loadTheme();
             checkForSavedDraft();
             updateSummary();
-            registerServiceWorker();
         });
-
-        // PWA Setup - For Real Implementation
-        function registerServiceWorker() {
-            showNotification('💡 To enable offline mode: Save this HTML file and create a service worker!', 'info');
-            
-            // This would work if you save the HTML file and create sw.js:
-            /*
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registered');
-                        showNotification('App ready for offline use!', 'success');
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            }
-            */
-        }
 
         function checkForSavedDraft() {
             const saved = localStorage.getItem('expenseReportDraft');
