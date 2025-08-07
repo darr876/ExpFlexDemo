@@ -26,6 +26,14 @@
             --radius-lg: 0.75rem;
         }
 
+    @keyframes shake { /* danger shake style */
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+        }
+
         [data-theme="dark"] {
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
@@ -265,6 +273,12 @@
             box-shadow: var(--shadow-md);
         }
 
+        .btn-danger:hover { /* danger shake */
+            animation: shake 0.3s ease-in-out;
+            box-shadow: var(--shadow-md);
+            
+        }
+
         .btn-warning {
             background: var(--warning-color);
             color: white;
@@ -272,6 +286,15 @@
 
         .btn-warning:hover {
             background: #d97706;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626; /* a darker red for hover */
         }
 
         .btn-group {
@@ -446,7 +469,7 @@
             </button>
             <h1>
                 <i class="fas fa-receipt"></i>
-                ExpenseFlex DEMO
+                ExpenseFlex DEV
             </h1>
             <p>Modern expense tracking and reporting made simple</p>
         </div>
@@ -491,8 +514,9 @@
         <div class="card">
             <div class="card-header">
                 <h2>
-                    <i class="fas fa-plus-circle"></i>
-                    Expense Items
+                <button class="btn btn-primary" onclick="addExpenseItem(); focusLastStartDate();">
+                    <i class="fas fa-plus"></i>
+                    Add New Expense
                 </h2>
             </div>
             <div class="card-content">
@@ -534,9 +558,9 @@
                 <i class="fas fa-file-export"></i>
                 Generate & Copy Report
             </button>
-            <button class="btn btn-primary" onclick="downloadReport()">
+            <button class="btn btn-primary" onclick="generateAndDownload()">
                 <i class="fas fa-download"></i>
-                Download Report
+                Generate & Download Report
             </button>
             <button class="btn btn-warning" onclick="saveDraft()">
                 <i class="fas fa-save"></i>
@@ -550,7 +574,7 @@
                 <i class="fas fa-refresh"></i>
                 Reset Form
             </button>
-            <button class="btn btn-secondary" onclick="clearDraft()">
+            <button class="btn btn-danger" onclick="clearDraft()">
                 <i class="fas fa-trash-alt"></i>
                 Clear Saved Draft
             </button>
@@ -697,44 +721,72 @@
             summarySection.style.display = expenses.length > 0 ? 'block' : 'none';
         }
 
-        function generateAndCopy() {
-            const currency = document.getElementById('currency').value;
-            const purpose = document.getElementById('purpose').value;
-            const approver = '';
+function generateAndCopy() {
+    const currency = document.getElementById('currency').value;
+    const purpose = document.getElementById('purpose').value;
+    const approver = '';
 
-            const expenses = document.querySelectorAll('.expense-item');
-            let total = 0;
-            let lines = [];
-            
-            expenses.forEach((expense, i) => {
-                const date = expense.querySelector('.expense-date').value;
-                const days = expense.querySelector('.expense-days').value || '';
-                const amount = parseFloat(expense.querySelector('.expense-amount').value) || 0;
-                const type = expense.querySelector('.expense-type').value || '';
-                const project = expense.querySelector('.expense-project').value || '';
-                const task = expense.querySelector('.expense-task').value || '';
-                const justification = expense.querySelector('.expense-justification').value || '';
-                const additional = expense.querySelector('.expense-additional').value || '';
-                
-                total += amount;
-                lines.push(`${i + 1}\t${formatDate(date)}\t${days}\t\t${amount.toFixed(2)}\t${currency}\t1.\t${amount.toFixed(2)}\t${type}\t${project}\t${task}\t\t${justification}\t${additional}`);
-            });
+    const expenses = document.querySelectorAll('.expense-item');
+    let total = 0;
+    let lines = [];
 
-            let header = `\t\t\t\t\tExpense Report\n\t\tExpense Cost Center\t${costCenter}\n\t\tReimbursement Currency\t${currency}\n\t\tPurpose\t${purpose}\n\t\tExpense Template\t${template}\n\t\tApprover\t${approver}\n\t\tTotal\t\t\t\t${total.toFixed(2)}\nLine\tStart Date\tDays\tDaily Rate\tReceipt Amount\tReceipt Currency\tExchange Rate\tReimbursable Amount\tExpense Type\tProject Number\tTask Number\tReceipt Missing\tJustification\tAdditional Information`;
+    expenses.forEach((expense, i) => {
+        const date = expense.querySelector('.expense-date').value;
+        const days = expense.querySelector('.expense-days').value || '';
+        const amount = parseFloat(expense.querySelector('.expense-amount').value) || 0;
+        const type = expense.querySelector('.expense-type').value || '';
+        const project = expense.querySelector('.expense-project').value || '';
+        const task = expense.querySelector('.expense-task').value || '';
+        const justification = expense.querySelector('.expense-justification').value || '';
+        const additional = expense.querySelector('.expense-additional').value || '';
 
-            let body = lines.join('\n');
-            let footer = `\n\t\t\t\t\tTotal\t${total.toFixed(2)}`;
+        total += amount;
+        lines.push(`${i + 1}\t${formatDate(date)}\t${days}\t\t${amount.toFixed(2)}\t${currency}\t1.\t${amount.toFixed(2)}\t${type}\t${project}\t${task}\t\t${justification}\t${additional}`);
+    });
 
-            const result = `${header}\n${body}${footer}`;
-            
-            document.getElementById('outputContent').textContent = result;
-            document.getElementById('outputSection').style.display = 'block';
+    let header = `\t\t\t\t\tExpense Report\n\t\tExpense Cost Center\t${costCenter}\n\t\tReimbursement Currency\t${currency}\n\t\tPurpose\t${purpose}\n\t\tExpense Template\t${template}\n\t\tApprover\t${approver}\n\t\tTotal\t\t\t\t${total.toFixed(2)}\nLine\tStart Date\tDays\tDaily Rate\tReceipt Amount\tReceipt Currency\tExchange Rate\tReimbursable Amount\tExpense Type\tProject Number\tTask Number\tReceipt Missing\tJustification\tAdditional Information`;
 
-            // Copy to clipboard
-            navigator.clipboard.writeText(result).then(() => {
-                showNotification('Report generated and copied to clipboard!');
-            });
-        }
+    let body = lines.join('\n');
+    let footer = `\n\t\t\t\t\tTotal\t${total.toFixed(2)}`;
+
+    const result = `${header}\n${body}${footer}`;
+
+    document.getElementById('outputContent').textContent = result;
+    document.getElementById('outputSection').style.display = 'block';
+
+    navigator.clipboard.writeText(result).then(() => {
+        showNotification('Report generated!');
+    });
+
+    return result; 
+}
+
+// feature - generate and download
+
+function generateAndDownload() {
+    const result = generateAndCopy(); 
+
+    const purpose = document.getElementById('purpose').value.trim().substring(0, 3) || 'EXP';
+    const project = document.getElementById('globalProject').value.trim() || '0000';
+    const now = new Date();
+    const dateStr = now.toLocaleString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    }).replace(/\W+/g, '-');
+
+    const filename = `${purpose}-${project}-${dateStr}.txt`;
+    const blob = new Blob([result], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 
         function resetForm() {
             document.getElementById('purpose').value = '';
@@ -845,28 +897,7 @@
             }
         }
 
-        function downloadReport() {
-            const purpose = document.getElementById('purpose').value.trim().substring(0, 3) || 'EXP';
-            const project = document.getElementById('globalProject').value.trim() || '0000';
-            const now = new Date();
-            const dateStr = now.toLocaleString('en-US', {
-                month: 'short',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            }).replace(/\W+/g, '-');
 
-            const filename = `${purpose}-${project}-${dateStr}.txt`;
-            const content = document.getElementById('outputContent').textContent || 'No content generated yet.';
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -906,5 +937,4 @@
 
     </script>
 </body>
-
 </html>
