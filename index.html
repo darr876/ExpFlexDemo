@@ -26,7 +26,7 @@
             --radius-lg: 0.75rem;
         }
 
-    @keyframes shake { /* danger shake style */
+        @keyframes shake { /* danger shake style */
   0% { transform: translateX(0); }
   25% { transform: translateX(-3px); }
   50% { transform: translateX(3px); }
@@ -558,9 +558,9 @@
                 <i class="fas fa-file-export"></i>
                 Generate & Copy Report
             </button>
-            <button class="btn btn-primary" onclick="generateAndDownload()">
+            <button class="btn btn-primary" onclick="downloadReport()">
                 <i class="fas fa-download"></i>
-                Generate & Download Report
+                Download Report
             </button>
             <button class="btn btn-warning" onclick="saveDraft()">
                 <i class="fas fa-save"></i>
@@ -570,15 +570,22 @@
                 <i class="fas fa-folder-open"></i>
                 Load Draft
             </button>
-            <button class="btn btn-secondary" onclick="resetForm()">
+            <button class="btn btn-secondary" onclick="importReport()">
+                <i class="fas fa-file-import"></i>
+                Import Report
+            </button>
+            <!-- button class="btn btn-secondary" onclick="resetForm()">
                 <i class="fas fa-refresh"></i>
                 Reset Form
-            </button>
+            </button -->
             <button class="btn btn-danger" onclick="clearDraft()">
                 <i class="fas fa-trash-alt"></i>
                 Clear Saved Draft
             </button>
         </div>
+
+        <!-- Hidden file input for import -->
+        <input type="file" id="fileInput" accept=".txt" style="display: none;">
 
         <div class="output-section" id="outputSection" style="display: none;">
             <h3 style="margin-bottom: 1rem;">
@@ -721,72 +728,44 @@
             summarySection.style.display = expenses.length > 0 ? 'block' : 'none';
         }
 
-function generateAndCopy() {
-    const currency = document.getElementById('currency').value;
-    const purpose = document.getElementById('purpose').value;
-    const approver = '';
+        function generateAndCopy() {
+            const currency = document.getElementById('currency').value;
+            const purpose = document.getElementById('purpose').value;
+            const approver = '';
 
-    const expenses = document.querySelectorAll('.expense-item');
-    let total = 0;
-    let lines = [];
+            const expenses = document.querySelectorAll('.expense-item');
+            let total = 0;
+            let lines = [];
+            
+            expenses.forEach((expense, i) => {
+                const date = expense.querySelector('.expense-date').value;
+                const days = expense.querySelector('.expense-days').value || '';
+                const amount = parseFloat(expense.querySelector('.expense-amount').value) || 0;
+                const type = expense.querySelector('.expense-type').value || '';
+                const project = expense.querySelector('.expense-project').value || '';
+                const task = expense.querySelector('.expense-task').value || '';
+                const justification = expense.querySelector('.expense-justification').value || '';
+                const additional = expense.querySelector('.expense-additional').value || '';
+                
+                total += amount;
+                lines.push(`${i + 1}\t${formatDate(date)}\t${days}\t\t${amount.toFixed(2)}\t${currency}\t1.\t${amount.toFixed(2)}\t${type}\t${project}\t${task}\t\t${justification}\t${additional}`);
+            });
 
-    expenses.forEach((expense, i) => {
-        const date = expense.querySelector('.expense-date').value;
-        const days = expense.querySelector('.expense-days').value || '';
-        const amount = parseFloat(expense.querySelector('.expense-amount').value) || 0;
-        const type = expense.querySelector('.expense-type').value || '';
-        const project = expense.querySelector('.expense-project').value || '';
-        const task = expense.querySelector('.expense-task').value || '';
-        const justification = expense.querySelector('.expense-justification').value || '';
-        const additional = expense.querySelector('.expense-additional').value || '';
+            let header = `\t\t\t\t\tExpense Report\n\t\tExpense Cost Center\t${costCenter}\n\t\tReimbursement Currency\t${currency}\n\t\tPurpose\t${purpose}\n\t\tExpense Template\t${template}\n\t\tApprover\t${approver}\n\t\tTotal\t\t\t\t${total.toFixed(2)}\nLine\tStart Date\tDays\tDaily Rate\tReceipt Amount\tReceipt Currency\tExchange Rate\tReimbursable Amount\tExpense Type\tProject Number\tTask Number\tReceipt Missing\tJustification\tAdditional Information`;
 
-        total += amount;
-        lines.push(`${i + 1}\t${formatDate(date)}\t${days}\t\t${amount.toFixed(2)}\t${currency}\t1.\t${amount.toFixed(2)}\t${type}\t${project}\t${task}\t\t${justification}\t${additional}`);
-    });
+            let body = lines.join('\n');
+            let footer = `\n\t\t\t\t\tTotal\t${total.toFixed(2)}`;
 
-    let header = `\t\t\t\t\tExpense Report\n\t\tExpense Cost Center\t${costCenter}\n\t\tReimbursement Currency\t${currency}\n\t\tPurpose\t${purpose}\n\t\tExpense Template\t${template}\n\t\tApprover\t${approver}\n\t\tTotal\t\t\t\t${total.toFixed(2)}\nLine\tStart Date\tDays\tDaily Rate\tReceipt Amount\tReceipt Currency\tExchange Rate\tReimbursable Amount\tExpense Type\tProject Number\tTask Number\tReceipt Missing\tJustification\tAdditional Information`;
+            const result = `${header}\n${body}${footer}`;
+            
+            document.getElementById('outputContent').textContent = result;
+            document.getElementById('outputSection').style.display = 'block';
 
-    let body = lines.join('\n');
-    let footer = `\n\t\t\t\t\tTotal\t${total.toFixed(2)}`;
-
-    const result = `${header}\n${body}${footer}`;
-
-    document.getElementById('outputContent').textContent = result;
-    document.getElementById('outputSection').style.display = 'block';
-
-    navigator.clipboard.writeText(result).then(() => {
-        showNotification('Report generated!');
-    });
-
-    return result; 
-}
-
-// feature - generate and download
-
-function generateAndDownload() {
-    const result = generateAndCopy(); 
-
-    const purpose = document.getElementById('purpose').value.trim().substring(0, 3) || 'EXP';
-    const project = document.getElementById('globalProject').value.trim() || '0000';
-    const now = new Date();
-    const dateStr = now.toLocaleString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    }).replace(/\W+/g, '-');
-
-    const filename = `${purpose}-${project}-${dateStr}.txt`;
-    const blob = new Blob([result], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
+            // Copy to clipboard
+            navigator.clipboard.writeText(result).then(() => {
+                showNotification('Report generated and copied to clipboard!');
+            });
+        }
 
         function resetForm() {
             document.getElementById('purpose').value = '';
@@ -848,6 +827,27 @@ function generateAndDownload() {
             showNotification('Saved draft cleared!');
         }
 
+        function importReport() {
+            document.getElementById('fileInput').click();
+        }
+
+        function reverseFormatDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split("-");
+            if (parts.length !== 3) return '';
+            
+            const [day, monthName, year] = parts;
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const monthIndex = months.indexOf(monthName);
+            
+            if (monthIndex === -1) return '';
+            
+            const month = (monthIndex + 1).toString().padStart(2, "0");
+            const paddedDay = day.padStart(2, "0");
+            
+            return `${year}-${month}-${paddedDay}`;
+        }
+
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = 'notification';
@@ -897,13 +897,121 @@ function generateAndDownload() {
             }
         }
 
+        function downloadReport() {
+            generateAndCopy(false);
+            const purpose = document.getElementById('purpose').value.trim().substring(0, 3) || 'EXP';
+            const project = document.getElementById('globalProject').value.trim() || '0000';
+            const now = new Date();
+            const dateStr = now.toLocaleString('en-US', {
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).replace(/\W+/g, '-');
 
+            const filename = `${purpose}-${project}-${dateStr}.txt`;
+            const content = document.getElementById('outputContent').textContent || 'No content generated yet.';
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
             checkForSavedDraft();
             updateSummary();
+            
+            // Set up file input listener for import
+            document.getElementById('fileInput').addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result.split('\n');
+                        const headerData = {};
+
+                        // Parse header information
+                        content.forEach(line => {
+                            const parts = line.trim().split('\t');
+                            if (parts.length >= 2) {
+                                if (parts[0] === 'Purpose') headerData.purpose = parts[1] || '';
+                                if (parts[0] === 'Expense Cost Center') headerData.costCenter = parts[1] || '';
+                            }
+                        });
+
+                        // Clear existing form
+                        resetForm();
+
+                        // Set header values
+                        document.getElementById('purpose').value = headerData.purpose || '';
+
+                        // Find the start of expense data (line starting with "Line\t")
+                        const headerIndex = content.findIndex(line => line.startsWith('Line\t'));
+                        if (headerIndex >= 0) {
+                            // Process expense lines starting after the header
+                            for (let i = headerIndex + 1; i < content.length; i++) {
+                                const line = content[i].trim();
+                                if (!line || line.startsWith('Total')) continue;
+                                
+                                const cols = line.split('\t');
+                                if (cols.length >= 13) {
+                                    // Extract data from columns
+                                    const lineNum = cols[0];
+                                    const startDate = cols[1];
+                                    const days = cols[2];
+                                    const receiptAmount = cols[4];
+                                    const expenseType = cols[8];
+                                    const projectNum = cols[9];
+                                    const taskNum = cols[10];
+                                    const justification = cols[12];
+                                    const additionalInfo = cols[13] || '';
+
+                                    // Set global project/task from first expense if not already set
+                                    if (lineNum === '1') {
+                                        if (projectNum && !document.getElementById('globalProject').value) {
+                                            document.getElementById('globalProject').value = projectNum;
+                                        }
+                                        if (taskNum && !document.getElementById('globalTask').value) {
+                                            document.getElementById('globalTask').value = taskNum;
+                                        }
+                                    }
+
+                                    // Add expense item with imported data
+                                    addExpenseItem([
+                                        reverseFormatDate(startDate), // Start Date (convert back to YYYY-MM-DD)
+                                        days,                         // Days
+                                        receiptAmount,                // Receipt Amount
+                                        expenseType,                  // Expense Type
+                                        projectNum,                   // Project #
+                                        taskNum,                      // Task #
+                                        justification,                // Justification
+                                        additionalInfo                // Additional Info
+                                    ]);
+                                }
+                            }
+                        }
+
+                        showNotification('Report imported successfully!');
+                        updateSummary();
+                        
+                    } catch (error) {
+                        console.error('Import error:', error);
+                        showNotification('Error importing file. Please check the file format.', 'warning');
+                    }
+                };
+                reader.readAsText(file);
+                
+                // Clear the file input so the same file can be imported again
+                this.value = '';
+            });
         });
 
         function checkForSavedDraft() {
@@ -938,4 +1046,3 @@ function generateAndDownload() {
     </script>
 </body>
 </html>
-
