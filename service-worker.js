@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expenseflex-cache-v1';
+const CACHE_NAME = 'expenseflex-cache-v2';
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -39,3 +39,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
