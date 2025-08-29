@@ -26,6 +26,14 @@
             --radius-lg: 0.75rem;
         }
 
+        @keyframes shake { /* danger shake style */
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+        }
+
         [data-theme="dark"] {
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
@@ -265,6 +273,12 @@
             box-shadow: var(--shadow-md);
         }
 
+        .btn-danger:hover { /* danger shake */
+            animation: shake 0.3s ease-in-out;
+            box-shadow: var(--shadow-md);
+            
+        }
+
         .btn-warning {
             background: var(--warning-color);
             color: white;
@@ -272,6 +286,15 @@
 
         .btn-warning:hover {
             background: #d97706;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626; /* a darker red for hover */
         }
 
         .btn-group {
@@ -446,7 +469,7 @@
             </button>
             <h1>
                 <i class="fas fa-receipt"></i>
-                ExpenseFlex
+                ExpenseFlexV2
             </h1>
             <p>Modern expense tracking and reporting made simple</p>
         </div>
@@ -491,8 +514,9 @@
         <div class="card">
             <div class="card-header">
                 <h2>
-                    <i class="fas fa-plus-circle"></i>
-                    Expense Items
+                <button class="btn btn-primary" onclick="addExpenseItem(); focusLastStartDate();">
+                    <i class="fas fa-plus"></i>
+                    Add New Expense
                 </h2>
             </div>
             <div class="card-content">
@@ -546,15 +570,22 @@
                 <i class="fas fa-folder-open"></i>
                 Load Draft
             </button>
-            <button class="btn btn-secondary" onclick="resetForm()">
+            <button class="btn btn-secondary" onclick="importReport()">
+                <i class="fas fa-file-import"></i>
+                Import Report
+            </button>
+            <!-- button class="btn btn-secondary" onclick="resetForm()">
                 <i class="fas fa-refresh"></i>
                 Reset Form
-            </button>
-            <button class="btn btn-secondary" onclick="clearDraft()">
+            </button -->
+            <button class="btn btn-danger" onclick="clearDraft()">
                 <i class="fas fa-trash-alt"></i>
                 Clear Saved Draft
             </button>
         </div>
+
+        <!-- Hidden file input for import -->
+        <input type="file" id="fileInput" accept=".txt" style="display: none;">
 
         <div class="output-section" id="outputSection" style="display: none;">
             <h3 style="margin-bottom: 1rem;">
@@ -796,6 +827,27 @@
             showNotification('Saved draft cleared!');
         }
 
+        function importReport() {
+            document.getElementById('fileInput').click();
+        }
+
+        function reverseFormatDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split("-");
+            if (parts.length !== 3) return '';
+            
+            const [day, monthName, year] = parts;
+            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const monthIndex = months.indexOf(monthName);
+            
+            if (monthIndex === -1) return '';
+            
+            const month = (monthIndex + 1).toString().padStart(2, "0");
+            const paddedDay = day.padStart(2, "0");
+            
+            return `${year}-${month}-${paddedDay}`;
+        }
+
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = 'notification';
@@ -846,6 +898,7 @@
         }
 
         function downloadReport() {
+            generateAndCopy(false);
             const purpose = document.getElementById('purpose').value.trim().substring(0, 3) || 'EXP';
             const project = document.getElementById('globalProject').value.trim() || '0000';
             const now = new Date();
@@ -873,6 +926,92 @@
             loadTheme();
             checkForSavedDraft();
             updateSummary();
+            
+            // Set up file input listener for import
+            document.getElementById('fileInput').addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result.split('\n');
+                        const headerData = {};
+
+                        // Parse header information
+                        content.forEach(line => {
+                            const parts = line.trim().split('\t');
+                            if (parts.length >= 2) {
+                                if (parts[0] === 'Purpose') headerData.purpose = parts[1] || '';
+                                if (parts[0] === 'Expense Cost Center') headerData.costCenter = parts[1] || '';
+                            }
+                        });
+
+                        // Clear existing form
+                        resetForm();
+
+                        // Set header values
+                        document.getElementById('purpose').value = headerData.purpose || '';
+
+                        // Find the start of expense data (line starting with "Line\t")
+                        const headerIndex = content.findIndex(line => line.startsWith('Line\t'));
+                        if (headerIndex >= 0) {
+                            // Process expense lines starting after the header
+                            for (let i = headerIndex + 1; i < content.length; i++) {
+                                const line = content[i].trim();
+                                if (!line || line.startsWith('Total')) continue;
+                                
+                                const cols = line.split('\t');
+                                if (cols.length >= 13) {
+                                    // Extract data from columns
+                                    const lineNum = cols[0];
+                                    const startDate = cols[1];
+                                    const days = cols[2];
+                                    const receiptAmount = cols[4];
+                                    const expenseType = cols[8];
+                                    const projectNum = cols[9];
+                                    const taskNum = cols[10];
+                                    const justification = cols[12];
+                                    const additionalInfo = cols[13] || '';
+
+                                    // Set global project/task from first expense if not already set
+                                    if (lineNum === '1') {
+                                        if (projectNum && !document.getElementById('globalProject').value) {
+                                            document.getElementById('globalProject').value = projectNum;
+                                        }
+                                        if (taskNum && !document.getElementById('globalTask').value) {
+                                            document.getElementById('globalTask').value = taskNum;
+                                        }
+                                    }
+
+                                    // Add expense item with imported data
+                                    addExpenseItem([
+                                        reverseFormatDate(startDate), // Start Date (convert back to YYYY-MM-DD)
+                                        days,                         // Days
+                                        receiptAmount,                // Receipt Amount
+                                        expenseType,                  // Expense Type
+                                        projectNum,                   // Project #
+                                        taskNum,                      // Task #
+                                        justification,                // Justification
+                                        additionalInfo                // Additional Info
+                                    ]);
+                                }
+                            }
+                        }
+
+                        showNotification('Report imported successfully!');
+                        updateSummary();
+                        
+                    } catch (error) {
+                        console.error('Import error:', error);
+                        showNotification('Error importing file. Please check the file format.', 'warning');
+                    }
+                };
+                reader.readAsText(file);
+                
+                // Clear the file input so the same file can be imported again
+                this.value = '';
+            });
         });
 
         function checkForSavedDraft() {
@@ -907,3 +1046,5 @@
     </script>
 </body>
 </html>
+
+
