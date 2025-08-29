@@ -432,6 +432,151 @@
             transform: translateX(0);
         }
 
+        .generate-section {
+            background: linear-gradient(135deg, var(--accent-color), #059669);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .generate-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .generate-section p {
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-generate {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-generate:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .secondary-actions-bottom {
+            position: relative;
+            margin-top: 1.5rem;
+        }
+
+        .actions-toggle {
+            width: 100%;
+            background: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            padding: 0.875rem 1.25rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .actions-toggle:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .actions-toggle .fa-chevron-down {
+            margin-left: auto;
+            font-size: 0.8rem;
+            transition: transform 0.2s ease;
+        }
+
+        .actions-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .actions-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .menu-section {
+            padding: 0.75rem 0;
+        }
+
+        .menu-section-title {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .menu-item {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-item:hover {
+            background: var(--secondary-color);
+        }
+
+        .menu-item i {
+            width: 16px;
+            text-align: center;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 0 0.75rem;
+        }
+
         @media (max-width: 640px) {
             .container {
                 padding: 0.5rem;
@@ -553,35 +698,55 @@
             </div>
         </div>
 
-        <div class="btn-group">
-            <button class="btn btn-success" onclick="generateAndCopy()">
-                <i class="fas fa-file-export"></i>
+        <!-- Prominent generate section -->
+        <div class="generate-section" id="generateSection" style="display: none;">
+            <h3><i class="fas fa-file-export"></i> Ready to Submit?</h3>
+            <p>Generate your expense report and copy it to the clipboard</p>
+            <button class="btn-generate" onclick="generateAndCopy()">
+                <i class="fas fa-magic"></i>
                 Generate & Copy Report
             </button>
-            <button class="btn btn-primary" onclick="downloadReport()">
-                <i class="fas fa-download"></i>
-                Download Report
+        </div>
+        
+        <!-- Secondary actions positioned after generate -->
+        <div class="secondary-actions-bottom">
+            <button class="actions-toggle" onclick="toggleActionsMenu()">
+                <i class="fas fa-cog"></i>
+                More Options
+                <i class="fas fa-chevron-down" style="margin-left: auto; font-size: 0.8rem;"></i>
             </button>
-            <button class="btn btn-warning" onclick="saveDraft()">
-                <i class="fas fa-save"></i>
-                Save Draft
-            </button>
-            <button class="btn btn-secondary" onclick="loadDraft()">
-                <i class="fas fa-folder-open"></i>
-                Load Draft
-            </button>
-            <button class="btn btn-secondary" onclick="importReport()">
-                <i class="fas fa-file-import"></i>
-                Import Report
-            </button>
-            <!-- button class="btn btn-secondary" onclick="resetForm()">
-                <i class="fas fa-refresh"></i>
-                Reset Form
-            </button -->
-            <button class="btn btn-danger" onclick="clearDraft()">
-                <i class="fas fa-trash-alt"></i>
-                Clear Saved Draft
-            </button>
+            
+            <div class="actions-menu" id="actionsMenu">
+                <div class="menu-section">
+                    <div class="menu-section-title">File Operations</div>
+                    <button class="menu-item" onclick="downloadReport()">
+                        <i class="fas fa-download"></i>
+                        Download Report
+                    </button>
+                    <button class="menu-item" onclick="importReport()">
+                        <i class="fas fa-file-import"></i>
+                        Import Report
+                    </button>
+                </div>
+                
+                <div class="menu-divider"></div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">Draft Management</div>
+                    <button class="menu-item" onclick="saveDraft()">
+                        <i class="fas fa-save"></i>
+                        Save Draft
+                    </button>
+                    <button class="menu-item" onclick="loadDraft()">
+                        <i class="fas fa-folder-open"></i>
+                        Load Draft
+                    </button>
+                    <button class="menu-item" onclick="clearDraft()">
+                        <i class="fas fa-trash-alt"></i>
+                        Clear Saved Draft
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Hidden file input for import -->
@@ -725,7 +890,10 @@
             document.getElementById('itemCount').textContent = expenses.length;
             
             const summarySection = document.getElementById('summarySection');
+            const generateSection = document.getElementById('generateSection');
+            
             summarySection.style.display = expenses.length > 0 ? 'block' : 'none';
+            generateSection.style.display = expenses.length > 0 ? 'block' : 'none';
         }
 
         function generateAndCopy() {
@@ -869,6 +1037,41 @@
                 setTimeout(() => notification.remove(), 300);
             }, type === 'info' ? 5000 : 3000); // Show info notifications longer
         }
+
+        // Actions menu toggle
+        function toggleActionsMenu() {
+            const menu = document.getElementById('actionsMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('actionsMenu');
+            const toggle = document.querySelector('.secondary-actions-bottom .actions-toggle');
+            
+            if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // Update chevron icon based on menu state
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'class') {
+                    const menu = mutation.target;
+                    const chevron = document.querySelector('.secondary-actions-bottom .actions-toggle .fa-chevron-down');
+                    if (chevron) {
+                        if (menu.classList.contains('show')) {
+                            chevron.style.transform = 'rotate(180deg)';
+                        } else {
+                            chevron.style.transform = 'rotate(0deg)';
+                        }
+                    }
+                }
+            });
+        });
+
+        observer.observe(document.getElementById('actionsMenu'), { attributes: true });
 
         // New functions from your updated code
         function handleTabToAddRow(e) {
@@ -1046,5 +1249,3 @@
     </script>
 </body>
 </html>
-
-
