@@ -663,8 +663,9 @@
         <div><strong style="font-size:13px;">Project # only</strong><br><span style="font-size:12px;color:var(--ink-muted);">Enter the project number and the task number fills itself (e.g. JK920 → JK921.01).</span></div>
       </div>
     </div>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--ink-muted);font-style:italic;">
-      Expense Type Category last checked: Feb 26, 2026
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:11px;color:var(--ink-muted);font-style:italic;">Expense Type Category last checked: Feb 26, 2026</span>
+      <button class="btn-link" onclick="clearLearnedJustifications()" style="font-size:11px;color:var(--ink-muted);">Clear learned suggestions</button>
     </div>
     <div class="modal-btns">
       <button class="btn btn-primary" onclick="closeModal('infoModal')">Got it</button>
@@ -847,7 +848,7 @@ function renderExpenses() {
             value="${e.justification}" placeholder="Reason for expense"
             list="justSuggestions"
             onkeydown="tabToAdd(event, ${e.id === lastId})"
-            onblur="learnJustification(this.value)">
+            onchange="learnJustification(this.value)">
         </div>
       </div>
     </div>`;
@@ -1123,6 +1124,12 @@ const DEFAULT_JUSTIFICATIONS = [
 
 function getLearnedJustifications() {
   try { return JSON.parse(localStorage.getItem(JUST_STORAGE_KEY)) || []; } catch { return []; }
+}
+
+function clearLearnedJustifications() {
+  localStorage.removeItem(JUST_STORAGE_KEY);
+  populateJustDatalist();
+  toast('Learned suggestions cleared', 'amber');
 }
 
 function learnJustification(val) {
