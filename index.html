@@ -1295,8 +1295,31 @@ function renderJustPanel(expId, query) {
   const defaultOpts = DEFAULT_JUSTIFICATIONS.map(v => makeOpt(v, false)).filter(Boolean).join('');
   if (defaultOpts) html += `<div class="just-section">Suggestions</div>${defaultOpts}`;
 
-  if (!html) html = '<div class="just-empty">No matches — press Enter to use your text</div>';
-  panel.innerHTML = html;
+  if (!html) {
+    if (q) html += '<div class="just-opt" onmousedown="selectJust(' + expId + ',\'' + q.replace(/'/g,"\\'") + '\')" style="font-style:italic;color:var(--accent)">Use \"' + escJust(q) + '\"</div>';
+    else html = '<div class="just-empty">Start typing to add your own</div>';
+  }
+
+  // Search box at top — inside panel so iOS keyboard doesn't cover options
+  const escapedCurrent = current.replace(/"/g, '&quot;');
+  const searchBar = '<div class="just-search-wrap">' +
+    '<input class="just-search-input" id="justSearch-' + expId + '" ' +
+    'type="text" placeholder="Search or type custom\u2026" ' +
+    'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" ' +
+    'value="' + escapedCurrent + '" ' +
+    'oninput="onJustSearchInput(' + expId + ', this.value)" ' +
+    'onmousedown="event.stopPropagation()" ' +
+    'onkeydown="onJustSearchKey(event, ' + expId + ')">' +
+    '</div>';
+  panel.innerHTML = searchBar + html;
+
+  // iOS-safe focus with delay
+  setTimeout(function() {
+    var si = document.getElementById('justSearch-' + expId);
+    if (si) { si.focus(); var len = si.value.length; si.setSelectionRange(len, len); }
+    var sel = panel.querySelector('.selected');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }, 50);
 }
 
 function escJust(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
