@@ -331,16 +331,7 @@
   .type-chevron { color: var(--ink-muted); font-size: 11px; flex-shrink: 0; transition: transform .2s; }
   .type-trigger.open .type-chevron { transform: rotate(180deg); }
   /* search bar inside panel */
-  .type-search-wrap {
-    padding: 8px 10px; border-bottom: 1px solid var(--border);
-    background: var(--surface); position: sticky; top: 0; z-index: 1;
-  }
-  .type-search-input {
-    width: 100%; padding: 7px 10px; border: 1.5px solid var(--border);
-    border-radius: var(--radius); background: var(--bg); color: var(--ink);
-    font-size: 14px; font-family: var(--font-body); outline: none;
-  }
-  .type-search-input:focus { border-color: var(--accent); }
+
   .type-panel {
     display: none; position: fixed; background: var(--surface);
     border: 1.5px solid var(--border); border-radius: var(--radius);
@@ -364,48 +355,6 @@
   .type-opt.selected::after { content: '✓'; font-size: 12px; }
   .type-opt mark { background: rgba(232,101,10,.15); color: var(--accent); border-radius: 2px; padding: 0 1px; font-style: normal; }
   .type-no-results { padding: 14px; text-align: center; color: var(--ink-muted); font-size: 13px; }
-
-  /* ── JUSTIFICATION PICKER ── */
-  .just-wrap { position: relative; }
-  .just-panel {
-    display: none; position: fixed; background: var(--surface);
-    border: 1.5px solid var(--border); border-radius: var(--radius);
-    box-shadow: var(--shadow-md); z-index: 300; max-height: 260px; overflow-y: auto;
-  }
-  .just-panel.open { display: block; }
-  .just-search-wrap {
-    padding: 8px 10px; border-bottom: 1px solid var(--border);
-    background: var(--surface); position: sticky; top: 0; z-index: 1;
-  }
-  .just-search-input {
-    width: 100%; padding: 7px 10px; border: 1.5px solid var(--border);
-    border-radius: var(--radius); background: var(--bg); color: var(--ink);
-    font-size: 14px; font-family: var(--font-body); outline: none;
-  }
-  .just-search-input:focus { border-color: var(--accent); }
-  .just-section {
-    padding: 6px 12px 3px; font-family: var(--font-display); font-size: 10px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted);
-    background: var(--surface-2); border-top: 1px solid var(--border); position: sticky; top: 0;
-  }
-  .just-section:first-child { border-top: none; }
-  .just-opt {
-    padding: 8px 16px; font-size: 13px; cursor: pointer; color: var(--ink);
-    display: flex; align-items: center; justify-content: space-between; transition: background .1s;
-    font-family: var(--font-body);
-  }
-  .just-opt:hover { background: var(--accent-lt); }
-  [data-theme="dark"] .just-opt:hover { background: rgba(232,101,10,.12); }
-  .just-opt.selected { color: var(--accent); font-weight: 600; }
-  .just-opt.selected::after { content: '✓'; font-size: 12px; }
-  .just-opt mark { background: rgba(232,101,10,.15); color: var(--accent); border-radius: 2px; padding: 0 1px; font-style: normal; }
-  .just-opt-del {
-    background: none; border: none; color: var(--ink-muted); cursor: pointer;
-    font-size: 12px; padding: 2px 4px; border-radius: 3px; opacity: 0; transition: opacity .15s, color .15s;
-  }
-  .just-opt:hover .just-opt-del { opacity: 1; }
-  .just-opt-del:hover { color: var(--red); }
-  .just-empty { padding: 10px 16px; font-size: 12px; color: var(--ink-muted); font-style: italic; }
 
   /* ── QUICK SCROLL ── */
   .scroll-btns {
@@ -448,8 +397,7 @@
     box-shadow: 0 0 0 3px rgba(99,102,241,.2);
     border-color: #6366f1;
   }
-  [data-theme="dark"] .just-search-input:focus,
-  [data-theme="dark"] .type-search-input:focus {
+  [data-theme="dark"] .just-search-input:focus {
     border-color: #6366f1;
   }
 
@@ -485,8 +433,8 @@
     .modal { max-height: 85vh; overflow-y: auto; }
     .modal-close-btn { display: flex !important; }
     /* panels — ensure they don't overflow viewport on mobile */
-    .type-panel, .just-panel {
-      max-height: 50vh;
+    .type-panel {
+      max-height: 60vh;
       max-width: calc(100vw - 32px);
     }
   }
@@ -892,16 +840,9 @@ function renderExpenses() {
         </div>
         <div class="field">
           <label>Justification</label>
-          <div class="just-wrap" id="jwrap-${e.id}">
-            <div class="type-trigger" id="justTrigger-${e.id}" onclick="toggleJustPicker(${e.id}, event)"
-              style="min-height:40px;">
-              <span class="type-display ${e.justification ? '' : 'placeholder'}" id="justDisplay-${e.id}">${e.justification || 'Pick or type…'}</span>
-              <span class="type-chevron">▾</span>
-            </div>
-            <input type="hidden" id="justInput-${e.id}"
-              data-id="${e.id}" data-field="justification" value="${e.justification}">
-            <div class="just-panel" id="jpanel-${e.id}"></div>
-          </div>
+          <input type="text" class="input" data-id="${e.id}" data-field="justification"
+            value="${e.justification}" placeholder="Reason for expense"
+            onkeydown="tabToAdd(event, ${e.id === lastId})">
         </div>
       </div>
     </div>`;
@@ -1132,290 +1073,10 @@ function onTypeSearch(expId) {
   // Legacy — search now lives inside the panel
   openTypePicker(expId);
 }
-function onTypeSearchInput(expId, val) {
-  const panel   = document.getElementById('panel-' + expId);
-  const current = (document.getElementById('typeInput-' + expId) || {}).value || '';
-  const q       = val.trim().toLowerCase();
-  let html      = '';
-  if (q) {
-    let any = false;
-    EXPENSE_CATEGORIES.forEach(cat => {
-      cat.items.forEach(item => {
-        if (item.toLowerCase().includes(q)) {
-          any = true;
-          html += `<div class="type-opt ${item===current?'selected':''}" onmousedown="selectType(${expId},'${item.replace(/'/g,"\'")}')">${hlType(item,q)}</div>`;
-        }
-      });
-    });
-    if (!any) html = '<div class="type-no-results">No matching expense types</div>';
-  } else {
-    EXPENSE_CATEGORIES.forEach(cat => {
-      html += `<div class="type-cat">${cat.label}</div>`;
-      cat.items.forEach(item => {
-        html += `<div class="type-opt ${item===current?'selected':''}" onmousedown="selectType(${expId},'${item.replace(/'/g,"\'")}')">${escType(item)}</div>`;
-      });
-    });
-  }
-  html += '<div style="padding:6px 12px 7px;font-size:10px;color:var(--ink-muted);border-top:1px solid var(--border);text-align:right;font-style:italic;">Types last updated: Feb 26, 2026</div>';
-  const searchWrap = panel.querySelector('.type-search-wrap');
-  panel.innerHTML = '';
-  if (searchWrap) panel.appendChild(searchWrap);
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  while (tmp.firstChild) panel.appendChild(tmp.firstChild);
-}
-
-
-function selectType(expId, type) {
-  const inp  = document.getElementById('typeInput-' + expId);
-  const disp = document.getElementById('typeDisplay-' + expId);
-  if (inp)  { inp.value = type; }
-  if (disp) { disp.textContent = type; disp.classList.remove('placeholder'); }
-  const exp = expenses.find(e => e.id === expId);
-  if (exp) exp.type = type;
-  closeTypePicker(expId);
-}
-
-// close pickers on scroll/resize reposition
-window.addEventListener('scroll', () => {
-  if (openPickerId !== null) positionTypePanel(openPickerId);
-}, { passive: true });
-window.addEventListener('resize', () => {
-  if (openPickerId !== null) positionTypePanel(openPickerId);
-});
-// close on outside click
-document.addEventListener('click', () => closeAllTypePickers());
-
-// ── MOVE & GROUP ──────────────────────────────────────────────────────────────
-function moveExpense(idx, dir) {
-  collectExpenses();
-  const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= expenses.length) return;
-  const tmp = expenses[idx];
-  expenses[idx]    = expenses[newIdx];
-  expenses[newIdx] = tmp;
-  renderExpenses();
-}
-
-function groupByType() {
-  collectExpenses();
-  const order = EXPENSE_CATEGORIES.map(c => c.label);
-  expenses.sort((a, b) => {
-    const ai = order.indexOf(getCategoryForType(a.type));
-    const bi = order.indexOf(getCategoryForType(b.type));
-    return ai - bi;
-  });
-  renderExpenses();
-  toast('Grouped by expense type', 'green');
-}
 
 
 
-// ── QUICK SCROLL ─────────────────────────────────────────────────────────────
-function updateScrollBtns() {
-  const el = document.getElementById('scrollBtns');
-  if (!el) return;
-  el.classList.toggle('visible', expenses.length >= 5);
-}
 
-// ── JUSTIFICATION PICKER ─────────────────────────────────────────────────────
-const JUST_STORAGE_KEY = 'expenseFlexJustifications';
-const DEFAULT_JUSTIFICATIONS = [
-  'Meals - Breakfast',
-  'Meals - Lunch',
-  'Meals - Dinner',
-  'Meals - Snacks',
-  'Uber Ride',
-  'Lyft Ride',
-  'Local Taxi',
-];
-
-function getLearnedJustifications() {
-  try { return JSON.parse(localStorage.getItem(JUST_STORAGE_KEY)) || []; } catch { return []; }
-}
-function saveLearnedJustifications(list) {
-  localStorage.setItem(JUST_STORAGE_KEY, JSON.stringify(list));
-}
-function learnJustification(val) {
-  const v = val.trim();
-  if (!v || DEFAULT_JUSTIFICATIONS.includes(v)) return;
-  const learned = getLearnedJustifications();
-  if (learned.includes(v)) return;
-  learned.unshift(v); // most recent first
-  if (learned.length > 20) learned.splice(20); // cap at 20
-  saveLearnedJustifications(learned);
-}
-function forgetJustification(val, expId) {
-  const learned = getLearnedJustifications().filter(v => v !== val);
-  saveLearnedJustifications(learned);
-  renderJustPanel(expId, document.getElementById('justInput-' + expId)?.value || '');
-}
-
-let openJustId = null;
-
-function positionJustPanel(expId) {
-  const inp   = document.getElementById('justTrigger-' + expId) || document.getElementById('justInput-' + expId);
-  const panel = document.getElementById('jpanel-' + expId);
-  if (!inp || !panel) return;
-  const rect = inp.getBoundingClientRect();
-  const spaceBelow = window.innerHeight - rect.bottom;
-  panel.style.width = rect.width + 'px';
-  panel.style.left  = rect.left + 'px';
-  if (spaceBelow >= 160 || spaceBelow >= rect.top) {
-    panel.style.top    = (rect.bottom + 4) + 'px';
-    panel.style.bottom = 'auto';
-  } else {
-    panel.style.top    = 'auto';
-    panel.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
-  }
-}
-
-function renderJustPanel(expId, query) {
-  const panel   = document.getElementById('jpanel-' + expId);
-  const current = document.getElementById('justInput-' + expId)?.value || '';
-  const q       = query.trim().toLowerCase();
-  const learned = getLearnedJustifications();
-  let html      = '';
-
-  function makeOpt(val, canDelete) {
-    const matched = q ? val.toLowerCase().includes(q) : true;
-    if (!matched) return '';
-    const hl  = q ? hlJust(val, q) : escJust(val);
-    const del = canDelete
-      ? `<button class="just-opt-del" onmousedown="event.preventDefault();forgetJustification('${val.replace(/'/g,"\'")}',${expId})" title="Remove">✕</button>`
-      : '';
-    return `<div class="just-opt ${val===current?'selected':''}" onmousedown="selectJust(${expId},'${val.replace(/'/g,"\'")}')"><span>${hl}</span>${del}</div>`;
-  }
-
-  if (learned.length > 0) {
-    const learnedOpts = learned.map(v => makeOpt(v, true)).filter(Boolean).join('');
-    if (learnedOpts) html += `<div class="just-section">Your entries</div>${learnedOpts}`;
-  }
-
-  const defaultOpts = DEFAULT_JUSTIFICATIONS.map(v => makeOpt(v, false)).filter(Boolean).join('');
-  if (defaultOpts) html += `<div class="just-section">Suggestions</div>${defaultOpts}`;
-
-  if (!html) {
-    if (q) html += '<div class="just-opt" onmousedown="selectJust(' + expId + ',\'' + q.replace(/'/g,"\\'") + '\')" style="font-style:italic;color:var(--accent)">Use \"' + escJust(q) + '\"</div>';
-    else html = '<div class="just-empty">Start typing to add your own</div>';
-  }
-
-  // Search box at top — inside panel so iOS keyboard doesn't cover options
-  const escapedCurrent = current.replace(/"/g, '&quot;');
-  const searchBar = '<div class="just-search-wrap">' +
-    '<input class="just-search-input" id="justSearch-' + expId + '" ' +
-    'type="text" placeholder="Search or type custom\u2026" ' +
-    'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" ' +
-    'value="' + escapedCurrent + '" ' +
-    'oninput="onJustSearchInput(' + expId + ', this.value)" ' +
-    'onmousedown="event.stopPropagation()" ' +
-    'onkeydown="onJustSearchKey(event, ' + expId + ')">' +
-    '</div>';
-  panel.innerHTML = searchBar + html;
-
-  // iOS-safe focus with delay
-  setTimeout(function() {
-    var si = document.getElementById('justSearch-' + expId);
-    if (si) { si.focus(); var len = si.value.length; si.setSelectionRange(len, len); }
-    var sel = panel.querySelector('.selected');
-    if (sel) sel.scrollIntoView({ block: 'nearest' });
-  }, 50);
-}
-
-function escJust(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function hlJust(text, q) {
-  const i = text.toLowerCase().indexOf(q);
-  if (i === -1) return escJust(text);
-  return escJust(text.slice(0,i)) + '<mark>' + escJust(text.slice(i,i+q.length)) + '</mark>' + escJust(text.slice(i+q.length));
-}
-
-function openJustPicker(expId) {
-  if (openJustId === expId) return;
-  closeAllJustPickers();
-  closeAllTypePickers(); // close type picker if open
-  openJustId = expId;
-  const panel = document.getElementById('jpanel-' + expId);
-  if (!panel) return;
-  panel.classList.add('open');
-  positionJustPanel(expId);
-  renderJustPanel(expId, '');
-}
-
-function toggleJustPicker(expId, event) {
-  if (event) event.stopPropagation();
-  if (openJustId === expId) closeJustPicker(expId);
-  else openJustPicker(expId);
-}
-
-function closeJustPicker(expId) {
-  const panel = document.getElementById('jpanel-' + expId);
-  if (panel) panel.classList.remove('open');
-  if (openJustId === expId) openJustId = null;
-}
-
-function closeAllJustPickers() {
-  if (openJustId !== null) closeJustPicker(openJustId);
-}
-
-function selectJust(expId, val) {
-  const inp  = document.getElementById('justInput-' + expId);
-  const disp = document.getElementById('justDisplay-' + expId);
-  if (inp)  inp.value = val;
-  if (disp) { disp.textContent = val; disp.classList.remove('placeholder'); }
-  const exp = expenses.find(e => e.id === expId);
-  if (exp) exp.justification = val;
-  closeJustPicker(expId);
-}
-
-function onJustSearch(expId) { openJustPicker(expId); }
-function onJustSearchInput(expId, val) {
-  const panel   = document.getElementById('jpanel-' + expId);
-  const current = document.getElementById('justInput-' + expId)?.value || '';
-  const q       = val.trim().toLowerCase();
-  const learned = getLearnedJustifications();
-  let html      = '';
-  function makeOpt(v, canDelete) {
-    if (q && !v.toLowerCase().includes(q)) return '';
-    const hl  = q ? hlJust(v, q) : escJust(v);
-    const del = canDelete
-      ? `<button class="just-opt-del" onmousedown="event.preventDefault();forgetJustification('${v.replace(/'/g,"\'")}',${expId})" title="Remove">✕</button>`
-      : '';
-    return `<div class="just-opt ${v===current?'selected':''}" onmousedown="selectJust(${expId},'${v.replace(/'/g,"\'")}')">${`<span>${hl}</span>`}${del}</div>`;
-  }
-  const learnedOpts = learned.map(v => makeOpt(v, true)).filter(Boolean).join('');
-  if (learnedOpts) html += `<div class="just-section">Your entries</div>${learnedOpts}`;
-  const defaultOpts = DEFAULT_JUSTIFICATIONS.map(v => makeOpt(v, false)).filter(Boolean).join('');
-  if (defaultOpts) html += `<div class="just-section">Suggestions</div>${defaultOpts}`;
-  if (!html) {
-    if (val.trim()) html = `<div class="just-opt" onmousedown="selectJust(${expId},'${val.trim().replace(/'/g,"\'")}')" style="font-style:italic;color:var(--accent)">Use "${escJust(val.trim())}"</div>`;
-    else html = '<div class="just-empty">Start typing to add your own</div>';
-  }
-  const searchWrap = panel.querySelector('.just-search-wrap');
-  panel.innerHTML = '';
-  if (searchWrap) panel.appendChild(searchWrap);
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  while (tmp.firstChild) panel.appendChild(tmp.firstChild);
-}
-
-function onJustSearchKey(e, expId) {
-  if (e.key === 'Enter') {
-    const val = document.getElementById('justSearch-' + expId)?.value.trim();
-    if (val) { learnJustification(val); selectJust(expId, val); }
-    e.preventDefault();
-  }
-  if (e.key === 'Escape') closeJustPicker(expId);
-}
-
-
-function onJustBlur(expId) {
-  // Small delay so mousedown on option fires first
-  setTimeout(() => {
-    const inp = document.getElementById('justInput-' + expId);
-    if (inp && inp.value.trim()) learnJustification(inp.value.trim());
-    closeJustPicker(expId);
-  }, 150);
-}
 
 function onJustKeydown(e, expId, isLast) {
   if (e.key === 'Escape') { closeJustPicker(expId); return; }
@@ -1431,6 +1092,142 @@ function onJustKeydown(e, expId, isLast) {
 window.addEventListener('scroll', () => {
   if (openJustId !== null) positionJustPanel(openJustId);
 }, { passive: true });
+
+// ── QUICK SCROLL ─────────────────────────────────────────────────────────────
+function updateScrollBtns() {
+  const el = document.getElementById('scrollBtns');
+  if (!el) return;
+  el.classList.toggle('visible', expenses.length >= 5);
+}
+
+
+// ── QUICK SCROLL ─────────────────────────────────────────────────────────────
+function updateScrollBtns() {
+  const el = document.getElementById('scrollBtns');
+  if (!el) return;
+  el.classList.toggle('visible', expenses.length >= 5);
+}
+
+
+// ── PICKER SYSTEM ─────────────────────────────────────────────────────────────
+// One active picker tracked globally
+let activePickerId  = null; // element id string of the open panel
+let activePickerExp = null; // expId of the open picker
+
+function positionPanel(panelEl, anchorEl) {
+  if (!panelEl || !anchorEl) return;
+  const rect       = anchorEl.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom;
+  panelEl.style.width = rect.width + 'px';
+  panelEl.style.left  = rect.left + 'px';
+  if (spaceBelow >= 160 || spaceBelow >= rect.top) {
+    panelEl.style.top    = (rect.bottom + 4) + 'px';
+    panelEl.style.bottom = 'auto';
+  } else {
+    panelEl.style.top    = 'auto';
+    panelEl.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+  }
+}
+
+function closePicker() {
+  if (!activePickerId) return;
+  var panel   = document.getElementById(activePickerId);
+  var trigger = document.getElementById(activePickerId.replace('panel-','trigger-').replace('jpanel-','justTrigger-'));
+  if (panel)   panel.classList.remove('open');
+  if (trigger) trigger.classList.remove('open');
+  activePickerId  = null;
+  activePickerExp = null;
+}
+
+// Close picker when clicking outside
+document.addEventListener('click', function() { closePicker(); });
+window.addEventListener('scroll', function() {
+  if (activePickerId) {
+    var panel   = document.getElementById(activePickerId);
+    var anchor  = document.getElementById(activePickerId.replace('panel-','trigger-').replace('jpanel-','justTrigger-'));
+    positionPanel(panel, anchor);
+  }
+}, { passive: true });
+
+// ── TYPE PICKER ───────────────────────────────────────────────────────────────
+function toggleTypePicker(expId, event) {
+  if (event) event.stopPropagation();
+  var panelId = 'panel-' + expId;
+  if (activePickerId === panelId) { closePicker(); return; }
+  closePicker();
+  openTypePicker(expId);
+}
+
+function openTypePicker(expId) {
+  closePicker();
+  var panel   = document.getElementById('panel-' + expId);
+  var trigger = document.getElementById('trigger-' + expId);
+  if (!panel || !trigger) return;
+  panel.classList.add('open');
+  trigger.classList.add('open');
+  activePickerId  = 'panel-' + expId;
+  activePickerExp = expId;
+  positionPanel(panel, trigger);
+  renderTypePanel(expId, '');
+}
+
+function closeTypePicker(expId) {
+  if (activePickerId === 'panel-' + expId) closePicker();
+}
+
+function closeAllTypePickers() { closePicker(); }
+
+function renderTypePanel(expId, query) {
+  var panel   = document.getElementById('panel-' + expId);
+  var current = (document.getElementById('typeInput-' + expId) || {}).value || '';
+  var q       = (query || '').trim().toLowerCase();
+  var html    = '';
+
+  if (q) {
+    var any = false;
+    EXPENSE_CATEGORIES.forEach(function(cat) {
+      cat.items.forEach(function(item) {
+        if (item.toLowerCase().includes(q)) {
+          any = true;
+          html += '<div class="type-opt' + (item===current?' selected':'') + '" onmousedown="event.preventDefault();selectType(' + expId + ',\'' + item.replace(/'/g,"\'") + '\')">' + hlType(item,q) + '</div>';
+        }
+      });
+    });
+    if (!any) html = '<div class="type-no-results">No matching types</div>';
+  } else {
+    EXPENSE_CATEGORIES.forEach(function(cat) {
+      html += '<div class="type-cat">' + cat.label + '</div>';
+      cat.items.forEach(function(item) {
+        html += '<div class="type-opt' + (item===current?' selected':'') + '" onmousedown="event.preventDefault();selectType(' + expId + ',\'' + item.replace(/'/g,"\'") + '\')">' + escType(item) + '</div>';
+      });
+    });
+  }
+  html += '<div style="padding:6px 12px 7px;font-size:10px;color:var(--ink-muted);border-top:1px solid var(--border);text-align:right;font-style:italic;">Types last updated: Feb 26, 2026</div>';
+
+    panel.innerHTML = html;
+  setTimeout(function() {
+    var sel = panel.querySelector('.selected');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }, 50);
+}
+
+
+
+
+function selectType(expId, type) {
+  var inp  = document.getElementById('typeInput-' + expId);
+  var disp = document.getElementById('typeDisplay-' + expId);
+  if (inp)  inp.value = type;
+  if (disp) { disp.textContent = type; disp.classList.remove('placeholder'); }
+  var exp = expenses.find(function(e) { return e.id === expId; });
+  if (exp) exp.type = type;
+  closePicker();
+}
+
+function positionTypePanel(expId) {
+  positionPanel(document.getElementById('panel-' + expId), document.getElementById('trigger-' + expId));
+}
+
 
 // ── REPORT ────────────────────────────────────────────────────────────────────
 function buildReport() {
@@ -1518,7 +1315,7 @@ document.getElementById('fileInput').addEventListener('change', function () {
           if (cols.length >= 13) {
             if (!firstProject) firstProject = cols[9] || '';
             expenses.push({
-              id: Date.now() + Math.random(),
+              id: Date.now() + Math.floor(Math.random() * 10000),
               date:          revDate(cols[1]),
               amount:        cols[4],
               type:          cols[8],
