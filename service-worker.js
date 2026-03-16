@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expenseflex-cache-v2';
+const CACHE_NAME = 'expenseflex-cache-v2.0';
 const URLS_TO_CACHE = [
   './',
   './index.html',
