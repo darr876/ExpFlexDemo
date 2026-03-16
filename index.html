@@ -1095,10 +1095,6 @@ function onJustKeydown(e, expId, isLast) {
   tabToAdd(e, isLast);
 }
 
-window.addEventListener('scroll', () => {
-  if (openJustId !== null) positionJustPanel(openJustId);
-}, { passive: true });
-
 // ── QUICK SCROLL ─────────────────────────────────────────────────────────────
 function updateScrollBtns() {
   const el = document.getElementById('scrollBtns');
@@ -1273,6 +1269,29 @@ function positionTypePanel(expId) {
   positionPanel(document.getElementById('panel-' + expId), document.getElementById('trigger-' + expId));
 }
 
+
+// ── MOVE & GROUP ─────────────────────────────────────────────────────────────
+function moveExpense(idx, dir) {
+  collectExpenses();
+  var newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= expenses.length) return;
+  var tmp = expenses[idx];
+  expenses[idx]    = expenses[newIdx];
+  expenses[newIdx] = tmp;
+  renderExpenses();
+}
+
+function groupByType() {
+  collectExpenses();
+  var order = EXPENSE_CATEGORIES.map(function(c) { return c.label; });
+  expenses.sort(function(a, b) {
+    var ai = order.indexOf(getCategoryForType(a.type));
+    var bi = order.indexOf(getCategoryForType(b.type));
+    return ai - bi;
+  });
+  renderExpenses();
+  toast('Grouped by expense type', 'green');
+}
 
 // ── REPORT ────────────────────────────────────────────────────────────────────
 function buildReport() {
