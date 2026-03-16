@@ -356,6 +356,36 @@
   .type-opt mark { background: rgba(232,101,10,.15); color: var(--accent); border-radius: 2px; padding: 0 1px; font-style: normal; }
   .type-no-results { padding: 14px; text-align: center; color: var(--ink-muted); font-size: 13px; }
 
+
+  /* ── PER-ROW CURRENCY OVERRIDE ── */
+  .row-currency-toggle {
+    background: none; border: none; color: var(--ink-muted); font-size: 11px;
+    cursor: pointer; padding: 0; text-decoration: underline; font-family: var(--font-body);
+    margin-top: 4px; display: inline-block;
+  }
+  .row-currency-toggle:hover { color: var(--accent); }
+  .row-currency-override {
+    display: none; margin-top: 8px; padding: 10px 12px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius); gap: 10px;
+  }
+  .row-currency-override.visible { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+  .row-currency-override .field { margin-bottom: 0; flex: 1; min-width: 120px; }
+  .row-rate-banner {
+    font-size: 11px; color: var(--ink-muted); margin-top: 4px; min-height: 16px;
+  }
+  .row-rate-banner.ok   { color: var(--green); }
+  .row-rate-banner.warn { color: var(--amber); }
+
+
+  /* ── MEAL LIMIT WARNING ── */
+  .meal-warning {
+    display: none; margin-top: 6px; padding: 7px 10px;
+    background: rgba(224,135,10,.10); border: 1px solid rgba(224,135,10,.35);
+    border-radius: var(--radius); font-size: 12px; color: var(--amber);
+  }
+  .meal-warning.visible { display: block; }
+
   /* ── QUICK SCROLL ── */
   .scroll-btns {
     display: none; position: fixed; right: 16px; bottom: 80px;
@@ -484,6 +514,8 @@
             <option value="MXN">MXN – Mexican Peso</option>
             <option value="JMD">JMD – Jamaican Dollar</option>
             <option value="BRL">BRL – Brazilian Real</option>
+            <option value="DOP">DOP – Dominican Peso</option>
+            <option value="BMD">BMD – Bermudian Dollar</option>
             <option value="ARS">ARS – Argentine Peso</option>
             <option value="COP">COP – Colombian Peso</option>
             <option value="CLP">CLP – Chilean Peso</option>
@@ -491,6 +523,7 @@
             <option value="TTD">TTD – Trinidad &amp; Tobago Dollar</option>
             <option value="BBD">BBD – Barbadian Dollar</option>
             <option value="XCD">XCD – Eastern Caribbean Dollar</option>
+            <option value="EUR">EUR – Euro</option>
           </select>
         </div>
       </div>
@@ -506,7 +539,14 @@
   </div>
 
   <!-- EXPENSES -->
-  <div class="section-label">Expenses</div>
+  <div style="display:flex;align-items:center;gap:8px;padding:0 20px;margin-bottom:8px;">
+    <div style="font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--ink-muted);">Expenses</div>
+    <button onclick="openModal('mealPolicyModal')"
+      style="display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius);padding:3px 8px;cursor:pointer;font-size:11px;font-weight:600;color:var(--ink-soft);font-family:var(--font-body);transition:all .15s;white-space:nowrap;"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink-soft)'"
+      title="Meal policy limits">🍽 Meal Policy</button>
+    </div>
   <div class="card">
     <div class="card-toolbar">
       <div class="card-title"></div>
@@ -640,7 +680,7 @@
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <span style="color:var(--accent);font-size:16px;line-height:1.4;">💱</span>
-        <div><strong style="font-size:13px;">Live exchange rates</strong><br><span style="font-size:12px;color:var(--ink-muted);">12 Americas &amp; Caribbean currencies with live rate fetch. Editable if offline.</span></div>
+        <div><strong style="font-size:13px;">Live exchange rates &amp; mixed currencies</strong><br><span style="font-size:12px;color:var(--ink-muted);">15 Americas &amp; Caribbean currencies including DOP, BMD &amp; EUR. Set a global currency or override per row for mixed-currency trips. Rate auto-fetches, editable if offline.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <span style="color:var(--accent);font-size:16px;line-height:1.4;">🔖</span>
@@ -649,6 +689,10 @@
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <span style="color:var(--accent);font-size:16px;line-height:1.4;">💬</span>
         <div><strong style="font-size:13px;">Justification suggestions</strong><br><span style="font-size:12px;color:var(--ink-muted);">Pick from common options like Meals - Breakfast, Uber Ride and more. Select "Other…" to type a custom entry.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="color:var(--accent);font-size:16px;line-height:1.4;">🍽️</span>
+        <div><strong style="font-size:13px;">Meal policy quick reference</strong><br><span style="font-size:12px;color:var(--ink-muted);">Tap 'Meal Policy' next to Expenses for per-country meal limits. Rows warn automatically when a meal exceeds the policy limit.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <span style="color:var(--accent);font-size:16px;line-height:1.4;">↕</span>
@@ -671,6 +715,50 @@
     </div>
     <div class="modal-close-btn">
       <button class="btn-link" onclick="closeModal('infoModal')" style="color:var(--ink-muted);font-size:12px;">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEAL POLICY MODAL ── -->
+<div class="modal-overlay" id="mealPolicyModal">
+  <div class="modal" style="max-width:480px">
+    <h3>🍽 Meal Policy Limits</h3>
+    <p>Maximum reimbursable meal amount per main meal, inclusive of drinks and gratuity. For countries not listed, the general limit is <strong>$50 USD</strong>.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;">
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--ink-soft);">🇺🇸 USD</span>
+        <span style="font-size:13px;font-weight:600;color:var(--ink);">$70.00</span>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--ink-soft);">🇨🇦 CAD</span>
+        <span style="font-size:13px;font-weight:600;color:var(--ink);">$70.00</span>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--ink-soft);">🇪🇺 EUR</span>
+        <span style="font-size:13px;font-weight:600;color:var(--ink);">€55.00</span>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--ink-soft);">🇧🇷 BRL</span>
+        <span style="font-size:13px;font-weight:600;color:var(--ink);">R$250.00</span>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--ink-soft);">🇲🇽 MXN</span>
+        <span style="font-size:13px;font-weight:600;color:var(--ink);">$500.00</span>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--ink-soft);">🇨🇴 COP</span>
+        <span style="font-size:13px;font-weight:600;color:var(--ink);">$125,000</span>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;grid-column:1/-1;">
+        <span style="font-size:13px;color:var(--ink-soft);">🌍 All others</span>
+        <span style="font-size:13px;font-weight:600;color:var(--ink);">~$50 USD equiv.</span>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--ink-muted);font-style:italic;">
+      Based on company Travel &amp; Expense Policy · July 2025. Limits are per main meal including drinks &amp; gratuity.
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="closeModal('mealPolicyModal')">Got it</button>
     </div>
   </div>
 </div>
@@ -745,7 +833,9 @@ function addExpense(data = {}) {
     project:       data.project       || '',
     task:          data.task          || '',
     justification: data.justification || '',
-    additional:    data.additional    || ''
+    additional:    data.additional    || '',
+    rowCurrency:   data.rowCurrency   || '',
+    rowRate:       data.rowRate       || ''
   });
   renderExpenses();
   setTimeout(() => {
@@ -777,6 +867,8 @@ function collectExpenses() {
         ? (justOther ? justOther.value : '')
         : justSelect.value;
     }
+    var rowCurrencySel = document.getElementById('rowCurrencySel-' + e.id);
+    var rowRateInp     = document.getElementById('rowRateInp-' + e.id);
     return {
       ...e,
       date:          getVal(e.id, 'date'),
@@ -784,6 +876,8 @@ function collectExpenses() {
       type:          typeEl ? typeEl.value : e.type,
       justification: justVal,
       additional:    getVal(e.id, 'additional'),
+      rowCurrency:   rowCurrencySel ? rowCurrencySel.value : (e.rowCurrency || ''),
+      rowRate:       rowRateInp     ? rowRateInp.value     : (e.rowRate     || ''),
     };
   });
 }
@@ -870,6 +964,47 @@ function renderExpenses() {
             style="margin-top:6px;display:${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"block":"none"};"
             onkeydown="tabToAdd(event, ${e.id === lastId})">
         </div>
+        <div class="meal-warning" id="mealWarn-${e.id}"></div>
+
+        <div style="margin-top:6px;">
+          <button class="row-currency-toggle" onclick="toggleRowCurrency(${e.id})">
+            ${e.rowCurrency ? '✎ Override: ' + e.rowCurrency : '+ Currency override'}
+          </button>
+          <div class="row-currency-override ${e.rowCurrency ? 'visible' : ''}" id="rowCurrencyPanel-${e.id}">
+            <div class="field">
+              <label>Currency</label>
+              <select class="input" id="rowCurrencySel-${e.id}" onchange="onRowCurrencyChange(${e.id}, this.value)">
+                <option value="">Use global</option>
+                <option value="USD"  ${e.rowCurrency==='USD'?'selected':''}>USD</option>
+                <option value="CAD"  ${e.rowCurrency==='CAD'?'selected':''}>CAD</option>
+                <option value="MXN"  ${e.rowCurrency==='MXN'?'selected':''}>MXN</option>
+                <option value="JMD"  ${e.rowCurrency==='JMD'?'selected':''}>JMD</option>
+                <option value="BRL"  ${e.rowCurrency==='BRL'?'selected':''}>BRL</option>
+                <option value="DOP"  ${e.rowCurrency==='DOP'?'selected':''}>DOP</option>
+                <option value="BMD"  ${e.rowCurrency==='BMD'?'selected':''}>BMD</option>
+                <option value="ARS"  ${e.rowCurrency==='ARS'?'selected':''}>ARS</option>
+                <option value="COP"  ${e.rowCurrency==='COP'?'selected':''}>COP</option>
+                <option value="CLP"  ${e.rowCurrency==='CLP'?'selected':''}>CLP</option>
+                <option value="PEN"  ${e.rowCurrency==='PEN'?'selected':''}>PEN</option>
+                <option value="TTD"  ${e.rowCurrency==='TTD'?'selected':''}>TTD</option>
+                <option value="BBD"  ${e.rowCurrency==='BBD'?'selected':''}>BBD</option>
+                <option value="XCD"  ${e.rowCurrency==='XCD'?'selected':''}>XCD</option>
+                <option value="EUR"  ${e.rowCurrency==='EUR'?'selected':''}>EUR</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Rate (to USD)</label>
+              <input type="number" step="0.000001" class="input" id="rowRateInp-${e.id}"
+                value="${e.rowRate || ''}" placeholder="0.000000"
+                oninput="onRowRateInput(${e.id}, this.value)">
+              <div class="row-rate-banner" id="rowRateBanner-${e.id}"></div>
+            </div>
+            <div class="field" style="flex:0;align-self:flex-end;">
+              <button class="btn btn-ghost btn-sm" onclick="clearRowCurrency(${e.id})">Remove</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>`;
   }).join('');
@@ -878,9 +1013,20 @@ function renderExpenses() {
 }
 
 function updateTotal() {
+  const globalRate = parseFloat(document.getElementById('rateEdit')?.value) || 1;
+  const globalCur  = document.getElementById('globalCurrency')?.value || 'USD';
   let total = 0;
-  document.querySelectorAll('[data-field="amount"]').forEach(el => { total += parseFloat(el.value) || 0; });
+  expenses.forEach(e => {
+    const amount = parseFloat(document.querySelector('[data-id="' + e.id + '"][data-field="amount"]')?.value) || 0;
+    const rowCur     = document.getElementById('rowCurrencySel-' + e.id)?.value || '';
+    const rowRateNum = parseFloat(document.getElementById('rowRateInp-' + e.id)?.value) || 0;
+    const rateNum = rowCur
+      ? (rowRateNum || 1)
+      : (globalCur === 'USD' ? 1 : globalRate);
+    total += amount * rateNum;
+  });
   document.getElementById('totalAmt').textContent = '$' + total.toFixed(2);
+  checkAllMealWarnings();
   scheduleAutoSave();
 }
 
@@ -1283,6 +1429,7 @@ function selectType(expId, type) {
   var exp = expenses.find(function(e) { return e.id === expId; });
   if (exp) exp.type = type;
   closePicker();
+  checkMealWarning(expId);
 }
 
 function positionTypePanel(expId) {
@@ -1330,6 +1477,176 @@ function onJustSelectChange(expId, val) {
     otherInput.style.display = 'none';
     otherInput.value = '';
   }
+  checkMealWarning(expId);
+}
+
+
+// ── PER-ROW CURRENCY OVERRIDE ────────────────────────────────────────────────
+var rowRateCache = {}; // { 'expId-currency': rate }
+
+function toggleRowCurrency(expId) {
+  var panel  = document.getElementById('rowCurrencyPanel-' + expId);
+  var toggle = document.querySelector('[onclick="toggleRowCurrency(' + expId + ')"]');
+  if (!panel) return;
+  var visible = panel.classList.contains('visible');
+  if (visible) {
+    panel.classList.remove('visible');
+    if (toggle) toggle.textContent = '+ Currency override';
+    // clear from expenses array
+    var exp = expenses.find(function(e){ return e.id === expId; });
+    if (exp) { exp.rowCurrency = ''; exp.rowRate = ''; }
+    updateTotal();
+  } else {
+    panel.classList.add('visible');
+    if (toggle) toggle.textContent = '✎ Override currency';
+  }
+}
+
+function clearRowCurrency(expId) {
+  var panel  = document.getElementById('rowCurrencyPanel-' + expId);
+  var toggle = document.querySelector('[onclick="toggleRowCurrency(' + expId + ')"]');
+  if (panel)  panel.classList.remove('visible');
+  if (toggle) toggle.textContent = '+ Currency override';
+  var exp = expenses.find(function(e){ return e.id === expId; });
+  if (exp) { exp.rowCurrency = ''; exp.rowRate = ''; }
+  // reset the select and rate input
+  var sel = document.getElementById('rowCurrencySel-' + expId);
+  var inp = document.getElementById('rowRateInp-' + expId);
+  var banner = document.getElementById('rowRateBanner-' + expId);
+  if (sel) sel.value = '';
+  if (inp) inp.value = '';
+  if (banner) { banner.textContent = ''; banner.className = 'row-rate-banner'; }
+  updateTotal();
+}
+
+function onRowCurrencyChange(expId, cur) {
+  var exp = expenses.find(function(e){ return e.id === expId; });
+  if (exp) exp.rowCurrency = cur;
+  if (!cur) {
+    var inp = document.getElementById('rowRateInp-' + expId);
+    var banner = document.getElementById('rowRateBanner-' + expId);
+    if (inp) inp.value = '';
+    if (banner) banner.textContent = '';
+    if (exp) exp.rowRate = '';
+    updateTotal();
+    return;
+  }
+  if (cur === 'USD') {
+    var inp = document.getElementById('rowRateInp-' + expId);
+    if (inp) inp.value = '1';
+    if (exp) exp.rowRate = '1';
+    updateTotal();
+    return;
+  }
+  // Check cache first
+  var cacheKey = cur;
+  if (rowRateCache[cacheKey]) {
+    setRowRate(expId, rowRateCache[cacheKey], 'ok');
+    return;
+  }
+  setRowRateBanner(expId, 'Fetching rate…', '');
+  fetch('https://open.er-api.com/v6/latest/USD')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data && data.rates && data.rates[cur]) {
+        var rate = parseFloat((1 / data.rates[cur]).toFixed(8));
+        rowRateCache[cacheKey] = rate;
+        setRowRate(expId, rate, 'ok');
+      } else {
+        setRowRateBanner(expId, 'Could not fetch — enter manually', 'warn');
+      }
+    })
+    .catch(function(){
+      setRowRateBanner(expId, 'Offline — enter rate manually', 'warn');
+    });
+}
+
+function setRowRate(expId, rate, status) {
+  var inp = document.getElementById('rowRateInp-' + expId);
+  var exp = expenses.find(function(e){ return e.id === expId; });
+  if (inp) inp.value = rate;
+  if (exp) exp.rowRate = rate;
+  var today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  setRowRateBanner(expId, '✓ Fetched ' + today, status);
+  updateTotal();
+}
+
+function setRowRateBanner(expId, msg, status) {
+  var banner = document.getElementById('rowRateBanner-' + expId);
+  if (!banner) return;
+  banner.textContent = msg;
+  banner.className = 'row-rate-banner' + (status ? ' ' + status : '');
+}
+
+function onRowRateInput(expId, val) {
+  var exp = expenses.find(function(e){ return e.id === expId; });
+  if (exp) exp.rowRate = val;
+  updateTotal();
+}
+
+
+// ── MEAL LIMIT WARNINGS ───────────────────────────────────────────────────────
+const MEAL_LIMITS = {
+  USD: 70, CAD: 70, MXN: 500, BRL: 250, EUR: 55, COP: 125000,
+  ARS: null, CLP: null, PEN: null, JMD: null, DOP: null,
+  BMD: null, TTD: null, BBD: null, XCD: null
+};
+const MEAL_TYPES = ['Meals'];
+const FALLBACK_MEAL_USD = 50;
+
+function checkMealWarning(expId) {
+  var warn    = document.getElementById('mealWarn-' + expId);
+  if (!warn) return;
+
+  var exp     = expenses.find(function(e){ return e.id === expId; });
+  var typeInp = document.getElementById('typeInput-' + expId);
+  var amtEl   = document.querySelector('[data-id="' + expId + '"][data-field="amount"]');
+
+  if (!amtEl) { warn.classList.remove('visible'); return; }
+
+  var expType = (typeInp ? typeInp.value : (exp ? exp.type : '')) || '';
+  var isMeal  = MEAL_TYPES.some(function(t){ return expType === t; });
+  if (!isMeal) { warn.classList.remove('visible'); warn.textContent = ''; return; }
+
+  var amount  = parseFloat(amtEl.value) || 0;
+  if (!amount) { warn.classList.remove('visible'); return; }
+
+  // Determine currency and limit
+  var rowCurEl = document.getElementById('rowCurrencySel-' + expId);
+  var currency = (rowCurEl && rowCurEl.value) || document.getElementById('globalCurrency')?.value || 'USD';
+
+  var limit    = MEAL_LIMITS[currency];
+
+  if (limit !== undefined && limit !== null) {
+    // We have a direct limit for this currency
+    if (amount > limit) {
+      warn.textContent = '⚠ Meal exceeds company policy limit of ' + limit + ' ' + currency + ' per meal.';
+      warn.classList.add('visible');
+    } else {
+      warn.classList.remove('visible');
+    }
+  } else {
+    // No direct limit — try to convert using known rate and compare to $50 USD
+    var rowRateEl = document.getElementById('rowRateInp-' + expId);
+    var globalRate = parseFloat(document.getElementById('rateEdit')?.value) || 0;
+    var rate = (rowRateEl && parseFloat(rowRateEl.value)) || globalRate;
+    if (rate > 0) {
+      var usdEquiv = amount * rate;
+      if (usdEquiv > FALLBACK_MEAL_USD) {
+        warn.textContent = '⚠ Meal exceeds company policy limit of ~$' + FALLBACK_MEAL_USD + ' USD (approx. $' + usdEquiv.toFixed(2) + ' USD equivalent).';
+        warn.classList.add('visible');
+      } else {
+        warn.classList.remove('visible');
+      }
+    } else {
+      // No rate available — skip warning
+      warn.classList.remove('visible');
+    }
+  }
+}
+
+function checkAllMealWarnings() {
+  expenses.forEach(function(e){ checkMealWarning(e.id); });
 }
 
 // ── REPORT ────────────────────────────────────────────────────────────────────
@@ -1343,13 +1660,20 @@ function buildReport() {
   let total = 0;
 
   const lines = expenses.map((e, i) => {
-    const project      = e.project || globalProject;
-    const task         = e.task    || globalTask || deriveTask(project);
-    const amount       = parseFloat(e.amount) || 0;
-    const rateNum      = currency === 'USD' ? 1 : (parseFloat(document.getElementById('rateEdit').value) || 1);
-    const reimbursable = (amount * rateNum).toFixed(2);
+    const project    = e.project || globalProject;
+    const task       = e.task    || globalTask || deriveTask(project);
+    const amount     = parseFloat(e.amount) || 0;
+    // Per-row override takes priority over global
+    const rowCur     = e.rowCurrency || '';
+    const rowRateNum = parseFloat(e.rowRate) || 0;
+    const useCurrency    = rowCur || currency;
+    const useRateNum     = rowCur
+      ? (rowRateNum || 1)
+      : (currency === 'USD' ? 1 : (parseFloat(document.getElementById('rateEdit').value) || 1));
+    const useRate        = useCurrency === 'USD' ? '1.' : useRateNum.toString();
+    const reimbursable   = (amount * useRateNum).toFixed(2);
     total += amount;
-    return `${i+1}\t${fmtDate(e.date)}\t1\t\t${amount.toFixed(2)}\t${currency}\t${rate}\t${reimbursable}\t${e.type}\t${project}\t${task}\t\t${e.justification}\t${e.additional}`;
+    return `${i+1}\t${fmtDate(e.date)}\t1\t\t${amount.toFixed(2)}\t${useCurrency}\t${useRate}\t${reimbursable}\t${e.type}\t${project}\t${task}\t\t${e.justification}\t${e.additional}`;
   });
 
   const header = [
