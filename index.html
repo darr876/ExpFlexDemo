@@ -235,6 +235,7 @@
   .add-expense-btn:hover {
     border-color: var(--accent); color: var(--accent); background: var(--accent-lt);
   }
+  [data-theme="dark"] .add-expense-btn:hover { background: rgba(232,101,10,.12); }
 
   /* ── MODALS ── */
   .modal-overlay {
@@ -267,6 +268,7 @@
     cursor: pointer; transition: border-color .15s, background .15s;
   }
   .saved-item:hover { border-color: var(--accent); background: var(--accent-lt); }
+  [data-theme="dark"] .saved-item:hover { background: rgba(232,101,10,.12); }
   .saved-item-info { flex: 1; min-width: 0; }
   .saved-item-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .saved-item-meta { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
@@ -316,20 +318,29 @@
     width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
     border-radius: var(--radius); background: var(--bg); color: var(--ink);
     font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 4px;
-    transition: border-color .15s, box-shadow .15s;
+    transition: border-color .15s, box-shadow .15s; user-select: none;
   }
-  .type-trigger input {
-    flex: 1; border: none; outline: none; background: transparent;
-    color: var(--ink); font-size: 14px; min-width: 0; cursor: pointer;
-    font-family: var(--font-body);
+  .type-display {
+    flex: 1; font-size: 14px; color: var(--ink); font-family: var(--font-body);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .type-trigger input::placeholder { color: var(--ink-muted); }
-  .type-trigger.open,
-  .type-trigger:focus-within {
+  .type-display.placeholder { color: var(--ink-muted); }
+  .type-trigger.open {
     border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,101,10,.12); background: var(--surface);
   }
   .type-chevron { color: var(--ink-muted); font-size: 11px; flex-shrink: 0; transition: transform .2s; }
   .type-trigger.open .type-chevron { transform: rotate(180deg); }
+  /* search bar inside panel */
+  .type-search-wrap {
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 1;
+  }
+  .type-search-input {
+    width: 100%; padding: 7px 10px; border: 1.5px solid var(--border);
+    border-radius: var(--radius); background: var(--bg); color: var(--ink);
+    font-size: 14px; font-family: var(--font-body); outline: none;
+  }
+  .type-search-input:focus { border-color: var(--accent); }
   .type-panel {
     display: none; position: fixed; background: var(--surface);
     border: 1.5px solid var(--border); border-radius: var(--radius);
@@ -348,6 +359,7 @@
     font-family: var(--font-body);
   }
   .type-opt:hover { background: var(--accent-lt); }
+  [data-theme="dark"] .type-opt:hover { background: rgba(232,101,10,.12); }
   .type-opt.selected { color: var(--accent); font-weight: 600; }
   .type-opt.selected::after { content: '✓'; font-size: 12px; }
   .type-opt mark { background: rgba(232,101,10,.15); color: var(--accent); border-radius: 2px; padding: 0 1px; font-style: normal; }
@@ -358,9 +370,19 @@
   .just-panel {
     display: none; position: fixed; background: var(--surface);
     border: 1.5px solid var(--border); border-radius: var(--radius);
-    box-shadow: var(--shadow-md); z-index: 300; max-height: 240px; overflow-y: auto;
+    box-shadow: var(--shadow-md); z-index: 300; max-height: 260px; overflow-y: auto;
   }
   .just-panel.open { display: block; }
+  .just-search-wrap {
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 1;
+  }
+  .just-search-input {
+    width: 100%; padding: 7px 10px; border: 1.5px solid var(--border);
+    border-radius: var(--radius); background: var(--bg); color: var(--ink);
+    font-size: 14px; font-family: var(--font-body); outline: none;
+  }
+  .just-search-input:focus { border-color: var(--accent); }
   .just-section {
     padding: 6px 12px 3px; font-family: var(--font-display); font-size: 10px; font-weight: 700;
     text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted);
@@ -373,6 +395,7 @@
     font-family: var(--font-body);
   }
   .just-opt:hover { background: var(--accent-lt); }
+  [data-theme="dark"] .just-opt:hover { background: rgba(232,101,10,.12); }
   .just-opt.selected { color: var(--accent); font-weight: 600; }
   .just-opt.selected::after { content: '✓'; font-size: 12px; }
   .just-opt mark { background: rgba(232,101,10,.15); color: var(--accent); border-radius: 2px; padding: 0 1px; font-style: normal; }
@@ -398,6 +421,38 @@
   }
   .scroll-btn:hover { opacity: .8; transform: scale(1.08); }
 
+  /* ── SELECTION + TAP HIGHLIGHT (iOS Safari fix) ── */
+  ::selection         { background: rgba(232,101,10,.28); color: var(--ink); }
+  ::-moz-selection    { background: rgba(232,101,10,.28); color: var(--ink); }
+  [data-theme="dark"] ::selection      { background: rgba(99,102,241,.4); color: #e8e8f4; }
+  [data-theme="dark"] ::-moz-selection { background: rgba(99,102,241,.4); color: #e8e8f4; }
+
+  /* Kill the white tap flash on iOS */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* iOS autofill blowout fix — keeps dark bg on autofilled inputs */
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+    -webkit-text-fill-color: var(--ink) !important;
+    caret-color: var(--ink);
+  }
+
+  /* Soften focus ring in dark mode so it doesn't blow out */
+  [data-theme="dark"] .input:focus {
+    box-shadow: 0 0 0 3px rgba(99,102,241,.2);
+    border-color: #6366f1;
+  }
+  [data-theme="dark"] .type-trigger.open,
+  [data-theme="dark"] .type-trigger:focus-within {
+    box-shadow: 0 0 0 3px rgba(99,102,241,.2);
+    border-color: #6366f1;
+  }
+  [data-theme="dark"] .just-search-input:focus,
+  [data-theme="dark"] .type-search-input:focus {
+    border-color: #6366f1;
+  }
+
   /* ── MOBILE ── */
   @media (max-width: 600px) {
     .app { padding: 0 0 60px; }
@@ -409,6 +464,17 @@
     .action-bar { padding: 0 12px; }
     .section-label { padding: 0 12px; }
     .card-body { padding: 10px 14px 14px; }
+    /* date input — constrain width on mobile */
+    input[type="date"] { max-width: 100%; font-size: 14px; }
+    /* modal — full screen feel, easier to dismiss */
+    .modal { max-height: 85vh; overflow-y: auto; }
+    .modal-close-btn { display: flex !important; }
+  }
+
+  /* close button hidden on desktop, shown on mobile via media query above */
+  .modal-close-btn {
+    display: none; width: 100%; justify-content: center;
+    margin-top: 8px;
   }
 </style>
 </head>
@@ -632,6 +698,9 @@
     <div class="modal-btns">
       <button class="btn btn-primary" onclick="closeModal('infoModal')">Got it</button>
     </div>
+    <div class="modal-close-btn">
+      <button class="btn-link" onclick="closeModal('infoModal')" style="color:var(--ink-muted);font-size:12px;">✕ Close</button>
+    </div>
   </div>
 </div>
 
@@ -794,11 +863,8 @@ function renderExpenses() {
           <label>Expense Type</label>
           <div class="type-picker" id="picker-${e.id}">
             <div class="type-trigger" id="trigger-${e.id}" onclick="toggleTypePicker(${e.id}, event)">
-              <input type="text" id="typeInput-${e.id}" data-id="${e.id}" data-field="type"
-                value="${e.type}" placeholder="Search or browse…"
-                oninput="onTypeSearch(${e.id})"
-                onclick="openTypePicker(${e.id}, event)"
-                autocomplete="off" spellcheck="false">
+              <span class="type-display ${e.type ? '' : 'placeholder'}" id="typeDisplay-${e.id}">${e.type || 'Select type…'}</span>
+              <input type="hidden" id="typeInput-${e.id}" data-id="${e.id}" data-field="type" value="${e.type}">
               <span class="type-chevron">▾</span>
             </div>
             <div class="type-panel" id="panel-${e.id}"></div>
@@ -807,14 +873,13 @@ function renderExpenses() {
         <div class="field">
           <label>Justification</label>
           <div class="just-wrap" id="jwrap-${e.id}">
-            <input type="text" class="input" id="justInput-${e.id}"
-              data-id="${e.id}" data-field="justification"
-              value="${e.justification}" placeholder="Type or pick a suggestion…"
-              autocomplete="off" spellcheck="false"
-              onfocus="openJustPicker(${e.id})"
-              oninput="onJustSearch(${e.id})"
-              onblur="onJustBlur(${e.id})"
-              onkeydown="onJustKeydown(event, ${e.id}, ${e.id === lastId})">
+            <div class="type-trigger" id="justTrigger-${e.id}" onclick="toggleJustPicker(${e.id}, event)"
+              style="min-height:40px;">
+              <span class="type-display ${e.justification ? '' : 'placeholder'}" id="justDisplay-${e.id}">${e.justification || 'Pick or type…'}</span>
+              <span class="type-chevron">▾</span>
+            </div>
+            <input type="hidden" id="justInput-${e.id}"
+              data-id="${e.id}" data-field="justification" value="${e.justification}">
             <div class="just-panel" id="jpanel-${e.id}"></div>
           </div>
         </div>
@@ -1019,13 +1084,7 @@ function openTypePicker(expId, event) {
   panel.classList.add('open');
   positionTypePanel(expId);
   renderTypePanel(expId, '');
-  // clear input so user can search immediately, restore on close if unchanged
-  const inp = document.getElementById('typeInput-' + expId);
-  if (inp) {
-    inp._prevVal = inp.value || '';
-    inp.value = '';
-    inp.focus();
-  }
+  // search is now inside the panel — no need to touch the hidden input
 }
 
 function closeTypePicker(expId) {
@@ -1034,8 +1093,7 @@ function closeTypePicker(expId) {
   const inp     = document.getElementById('typeInput-' + expId);
   if (trigger) trigger.classList.remove('open');
   if (panel)   panel.classList.remove('open');
-  // restore previous value if nothing was typed/selected
-  if (inp && inp.value === '' && inp._prevVal !== undefined) inp.value = inp._prevVal;
+  // nothing to restore — value is in hidden input, display in span
   if (openPickerId === expId) openPickerId = null;
 }
 
@@ -1050,23 +1108,48 @@ function toggleTypePicker(expId, event) {
 }
 
 function onTypeSearch(expId) {
-  const inp = document.getElementById('typeInput-' + expId);
-  if (!inp) return;
-  if (openPickerId !== expId) {
-    closeAllTypePickers();
-    openPickerId = expId;
-    const trigger = document.getElementById('trigger-' + expId);
-    const panel   = document.getElementById('panel-' + expId);
-    if (trigger) trigger.classList.add('open');
-    if (panel)   { panel.classList.add('open'); positionTypePanel(expId); }
+  // Legacy — search now lives inside the panel
+  openTypePicker(expId);
+}
+function onTypeSearchInput(expId, val) {
+  const panel   = document.getElementById('panel-' + expId);
+  const current = (document.getElementById('typeInput-' + expId) || {}).value || '';
+  const q       = val.trim().toLowerCase();
+  let html      = '';
+  if (q) {
+    let any = false;
+    EXPENSE_CATEGORIES.forEach(cat => {
+      cat.items.forEach(item => {
+        if (item.toLowerCase().includes(q)) {
+          any = true;
+          html += `<div class="type-opt ${item===current?'selected':''}" onmousedown="selectType(${expId},'${item.replace(/'/g,"\'")}')">${hlType(item,q)}</div>`;
+        }
+      });
+    });
+    if (!any) html = '<div class="type-no-results">No matching expense types</div>';
+  } else {
+    EXPENSE_CATEGORIES.forEach(cat => {
+      html += `<div class="type-cat">${cat.label}</div>`;
+      cat.items.forEach(item => {
+        html += `<div class="type-opt ${item===current?'selected':''}" onmousedown="selectType(${expId},'${item.replace(/'/g,"\'")}')">${escType(item)}</div>`;
+      });
+    });
   }
-  renderTypePanel(expId, inp.value);
+  html += '<div style="padding:6px 12px 7px;font-size:10px;color:var(--ink-muted);border-top:1px solid var(--border);text-align:right;font-style:italic;">Types last updated: Feb 26, 2026</div>';
+  const searchWrap = panel.querySelector('.type-search-wrap');
+  panel.innerHTML = '';
+  if (searchWrap) panel.appendChild(searchWrap);
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  while (tmp.firstChild) panel.appendChild(tmp.firstChild);
 }
 
+
 function selectType(expId, type) {
-  const inp = document.getElementById('typeInput-' + expId);
-  if (inp) { inp.value = type; inp._prevVal = type; }
-  // update expenses array immediately
+  const inp  = document.getElementById('typeInput-' + expId);
+  const disp = document.getElementById('typeDisplay-' + expId);
+  if (inp)  { inp.value = type; }
+  if (disp) { disp.textContent = type; disp.classList.remove('placeholder'); }
   const exp = expenses.find(e => e.id === expId);
   if (exp) exp.type = type;
   closeTypePicker(expId);
@@ -1150,7 +1233,7 @@ function forgetJustification(val, expId) {
 let openJustId = null;
 
 function positionJustPanel(expId) {
-  const inp   = document.getElementById('justInput-' + expId);
+  const inp   = document.getElementById('justTrigger-' + expId) || document.getElementById('justInput-' + expId);
   const panel = document.getElementById('jpanel-' + expId);
   if (!inp || !panel) return;
   const rect = inp.getBoundingClientRect();
@@ -1213,6 +1296,12 @@ function openJustPicker(expId) {
   renderJustPanel(expId, '');
 }
 
+function toggleJustPicker(expId, event) {
+  if (event) event.stopPropagation();
+  if (openJustId === expId) closeJustPicker(expId);
+  else openJustPicker(expId);
+}
+
 function closeJustPicker(expId) {
   const panel = document.getElementById('jpanel-' + expId);
   if (panel) panel.classList.remove('open');
@@ -1224,18 +1313,55 @@ function closeAllJustPickers() {
 }
 
 function selectJust(expId, val) {
-  const inp = document.getElementById('justInput-' + expId);
-  if (inp) inp.value = val;
+  const inp  = document.getElementById('justInput-' + expId);
+  const disp = document.getElementById('justDisplay-' + expId);
+  if (inp)  inp.value = val;
+  if (disp) { disp.textContent = val; disp.classList.remove('placeholder'); }
   const exp = expenses.find(e => e.id === expId);
   if (exp) exp.justification = val;
   closeJustPicker(expId);
 }
 
-function onJustSearch(expId) {
-  if (openJustId !== expId) openJustPicker(expId);
-  const inp = document.getElementById('justInput-' + expId);
-  renderJustPanel(expId, inp ? inp.value : '');
+function onJustSearch(expId) { openJustPicker(expId); }
+function onJustSearchInput(expId, val) {
+  const panel   = document.getElementById('jpanel-' + expId);
+  const current = document.getElementById('justInput-' + expId)?.value || '';
+  const q       = val.trim().toLowerCase();
+  const learned = getLearnedJustifications();
+  let html      = '';
+  function makeOpt(v, canDelete) {
+    if (q && !v.toLowerCase().includes(q)) return '';
+    const hl  = q ? hlJust(v, q) : escJust(v);
+    const del = canDelete
+      ? `<button class="just-opt-del" onmousedown="event.preventDefault();forgetJustification('${v.replace(/'/g,"\'")}',${expId})" title="Remove">✕</button>`
+      : '';
+    return `<div class="just-opt ${v===current?'selected':''}" onmousedown="selectJust(${expId},'${v.replace(/'/g,"\'")}')">${`<span>${hl}</span>`}${del}</div>`;
+  }
+  const learnedOpts = learned.map(v => makeOpt(v, true)).filter(Boolean).join('');
+  if (learnedOpts) html += `<div class="just-section">Your entries</div>${learnedOpts}`;
+  const defaultOpts = DEFAULT_JUSTIFICATIONS.map(v => makeOpt(v, false)).filter(Boolean).join('');
+  if (defaultOpts) html += `<div class="just-section">Suggestions</div>${defaultOpts}`;
+  if (!html) {
+    if (val.trim()) html = `<div class="just-opt" onmousedown="selectJust(${expId},'${val.trim().replace(/'/g,"\'")}')" style="font-style:italic;color:var(--accent)">Use "${escJust(val.trim())}"</div>`;
+    else html = '<div class="just-empty">Start typing to add your own</div>';
+  }
+  const searchWrap = panel.querySelector('.just-search-wrap');
+  panel.innerHTML = '';
+  if (searchWrap) panel.appendChild(searchWrap);
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  while (tmp.firstChild) panel.appendChild(tmp.firstChild);
 }
+
+function onJustSearchKey(e, expId) {
+  if (e.key === 'Enter') {
+    const val = document.getElementById('justSearch-' + expId)?.value.trim();
+    if (val) { learnJustification(val); selectJust(expId, val); }
+    e.preventDefault();
+  }
+  if (e.key === 'Escape') closeJustPicker(expId);
+}
+
 
 function onJustBlur(expId) {
   // Small delay so mousedown on option fires first
