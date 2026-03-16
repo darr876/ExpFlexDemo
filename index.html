@@ -768,14 +768,22 @@ function getVal(id, field) {
 
 function collectExpenses() {
   expenses = expenses.map(e => {
-    // type is read from the picker input directly
     const typeEl = document.getElementById('typeInput-' + e.id);
+    // justification: if "Other" selected, read from text input; else from select
+    const justSelect = document.querySelector('[data-id="' + e.id + '"][data-field="justification-select"]');
+    const justOther  = document.getElementById('justOther-' + e.id);
+    let justVal = e.justification;
+    if (justSelect) {
+      justVal = justSelect.value === '__other__'
+        ? (justOther ? justOther.value : '')
+        : justSelect.value;
+    }
     return {
       ...e,
       date:          getVal(e.id, 'date'),
       amount:        getVal(e.id, 'amount'),
       type:          typeEl ? typeEl.value : e.type,
-      justification: getVal(e.id, 'justification'),
+      justification: justVal,
       additional:    getVal(e.id, 'additional'),
     };
   });
@@ -844,15 +852,23 @@ function renderExpenses() {
         </div>
         <div class="field">
           <label>Justification</label>
-          <div style="position:relative;">
-            <input type="text" class="input" data-id="${e.id}" data-field="justification"
-              value="${e.justification}" placeholder="Reason for expense"
-              list="justSuggestions"
-              style="padding-right:32px;"
-              onkeydown="tabToAdd(event, ${e.id === lastId})"
-              onchange="learnJustification(this.value)">
-            <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--ink-muted);font-size:11px;pointer-events:none;">▾</span>
-          </div>
+          <select class="input" data-id="${e.id}" data-field="justification-select"
+            onchange="onJustSelectChange(${e.id}, this.value)">
+            <option value="">-- Select --</option>
+            <option value="Meals - Breakfast" ${e.justification==="Meals - Breakfast"?"selected":""}>Meals - Breakfast</option>
+            <option value="Meals - Lunch" ${e.justification==="Meals - Lunch"?"selected":""}>Meals - Lunch</option>
+            <option value="Meals - Dinner" ${e.justification==="Meals - Dinner"?"selected":""}>Meals - Dinner</option>
+            <option value="Meals - Snacks" ${e.justification==="Meals - Snacks"?"selected":""}>Meals - Snacks</option>
+            <option value="Uber Ride" ${e.justification==="Uber Ride"?"selected":""}>Uber Ride</option>
+            <option value="Lyft Ride" ${e.justification==="Lyft Ride"?"selected":""}>Lyft Ride</option>
+            <option value="Local Taxi" ${e.justification==="Local Taxi"?"selected":""}>Local Taxi</option>
+            <option value="__other__" ${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"selected":""}>Other…</option>
+          </select>
+          <input type="text" class="input" id="justOther-${e.id}" data-id="${e.id}" data-field="justification"
+            value="${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi"].includes(e.justification)?e.justification:""}"
+            placeholder="Describe the expense…"
+            style="margin-top:6px;display:${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"block":"none"};"
+            onkeydown="tabToAdd(event, ${e.id === lastId})">
         </div>
       </div>
     </div>`;
@@ -1295,6 +1311,19 @@ function groupByType() {
   });
   renderExpenses();
   toast('Grouped by expense type', 'green');
+}
+
+
+function onJustSelectChange(expId, val) {
+  var otherInput = document.getElementById('justOther-' + expId);
+  if (!otherInput) return;
+  if (val === '__other__') {
+    otherInput.style.display = 'block';
+    otherInput.focus();
+  } else {
+    otherInput.style.display = 'none';
+    otherInput.value = '';
+  }
 }
 
 // ── REPORT ────────────────────────────────────────────────────────────────────
