@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ExpenseFlex</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -464,11 +464,31 @@
     .action-bar { padding: 0 12px; }
     .section-label { padding: 0 12px; }
     .card-body { padding: 10px 14px 14px; }
-    /* date input — constrain width on mobile */
-    input[type="date"] { max-width: 100%; font-size: 14px; }
+    /* iOS: inputs must be 16px+ or the viewport zooms on focus */
+    input, select, textarea,
+    .input, .type-search-input, .just-search-input { font-size: 16px !important; }
+    /* date input styling — prevent iOS black-box rendering */
+    input[type="date"] {
+      font-size: 16px !important;
+      -webkit-appearance: none;
+      appearance: none;
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--bg);
+      color: var(--ink);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      display: block;
+    }
     /* modal — full screen feel, easier to dismiss */
     .modal { max-height: 85vh; overflow-y: auto; }
     .modal-close-btn { display: flex !important; }
+    /* panels — ensure they don't overflow viewport on mobile */
+    .type-panel, .just-panel {
+      max-height: 50vh;
+      max-width: calc(100vw - 32px);
+    }
   }
 
   /* close button hidden on desktop, shown on mobile via media query above */
@@ -1076,6 +1096,7 @@ function openTypePicker(expId, event) {
   if (event) event.stopPropagation();
   if (openPickerId === expId) return;
   closeAllTypePickers();
+  closeAllJustPickers(); // close just picker if open
   openPickerId = expId;
   const trigger = document.getElementById('trigger-' + expId);
   const panel   = document.getElementById('panel-' + expId);
@@ -1288,6 +1309,7 @@ function hlJust(text, q) {
 function openJustPicker(expId) {
   if (openJustId === expId) return;
   closeAllJustPickers();
+  closeAllTypePickers(); // close type picker if open
   openJustId = expId;
   const panel = document.getElementById('jpanel-' + expId);
   if (!panel) return;
