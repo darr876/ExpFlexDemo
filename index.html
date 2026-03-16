@@ -474,7 +474,7 @@
       <div class="currency-row">
         <div class="field">
           <label>Project #</label>
-          <input type="text" id="globalProject" class="input" placeholder="Only enter the Project Number (e.g. JK920)" oninput="onProjectChange()">
+          <input type="text" id="globalProject" class="input" placeholder="Project # (e.g. JK920)" oninput="onProjectChange()">
         </div>
         <div class="field">
           <label>Currency</label>
@@ -663,9 +663,8 @@
         <div><strong style="font-size:13px;">Project # only</strong><br><span style="font-size:12px;color:var(--ink-muted);">Enter the project number and the task number fills itself (e.g. JK920 → JK921.01).</span></div>
       </div>
     </div>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
       <span style="font-size:11px;color:var(--ink-muted);font-style:italic;">Expense Type Category last checked: Feb 26, 2026</span>
-      <button class="btn-link" onclick="clearLearnedJustifications()" style="font-size:11px;color:var(--ink-muted);">Clear learned suggestions</button>
     </div>
     <div class="modal-btns">
       <button class="btn btn-primary" onclick="closeModal('infoModal')">Got it</button>
@@ -859,13 +858,14 @@ function renderExpenses() {
             <option value="Meals - Lunch" ${e.justification==="Meals - Lunch"?"selected":""}>Meals - Lunch</option>
             <option value="Meals - Dinner" ${e.justification==="Meals - Dinner"?"selected":""}>Meals - Dinner</option>
             <option value="Meals - Snacks" ${e.justification==="Meals - Snacks"?"selected":""}>Meals - Snacks</option>
+            <option value="Meals - Coffee/Tea" ${e.justification==="Meals - Coffee/Tea"?"selected":""}>Meals - Coffee/Tea</option>
             <option value="Uber Ride" ${e.justification==="Uber Ride"?"selected":""}>Uber Ride</option>
             <option value="Lyft Ride" ${e.justification==="Lyft Ride"?"selected":""}>Lyft Ride</option>
             <option value="Local Taxi" ${e.justification==="Local Taxi"?"selected":""}>Local Taxi</option>
             <option value="__other__" ${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"selected":""}>Other…</option>
           </select>
           <input type="text" class="input" id="justOther-${e.id}" data-id="${e.id}" data-field="justification"
-            value="${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi"].includes(e.justification)?e.justification:""}"
+            value="${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee/Tea","Uber Ride","Lyft Ride","Local Taxi"].includes(e.justification)?e.justification:""}"
             placeholder="Describe the expense…"
             style="margin-top:6px;display:${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"block":"none"};"
             onkeydown="tabToAdd(event, ${e.id === lastId})">
@@ -1307,10 +1307,16 @@ function groupByType() {
   expenses.sort(function(a, b) {
     var ai = order.indexOf(getCategoryForType(a.type));
     var bi = order.indexOf(getCategoryForType(b.type));
-    return ai - bi;
+    if (ai !== bi) return ai - bi;
+    // Within same category, sort by date oldest first
+    var da = a.date || '';
+    var db = b.date || '';
+    if (da < db) return -1;
+    if (da > db) return 1;
+    return 0;
   });
   renderExpenses();
-  toast('Grouped by expense type', 'green');
+  toast('Grouped by type & sorted by date', 'green');
 }
 
 
