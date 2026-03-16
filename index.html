@@ -555,6 +555,9 @@
     </div>
   </div>
 
+<!-- JUSTIFICATION DATALIST -->
+<datalist id="justSuggestions"></datalist>
+
 </div>
 
 <!-- QUICK SCROLL -->
@@ -842,7 +845,9 @@ function renderExpenses() {
           <label>Justification</label>
           <input type="text" class="input" data-id="${e.id}" data-field="justification"
             value="${e.justification}" placeholder="Reason for expense"
-            onkeydown="tabToAdd(event, ${e.id === lastId})">
+            list="justSuggestions"
+            onkeydown="tabToAdd(event, ${e.id === lastId})"
+            onblur="learnJustification(this.value)">
         </div>
       </div>
     </div>`;
@@ -1108,6 +1113,39 @@ function updateScrollBtns() {
   el.classList.toggle('visible', expenses.length >= 5);
 }
 
+
+// ── JUSTIFICATION SUGGESTIONS ────────────────────────────────────────────────
+const JUST_STORAGE_KEY = 'expenseFlexJustifications';
+const DEFAULT_JUSTIFICATIONS = [
+  'Meals - Breakfast','Meals - Lunch','Meals - Dinner','Meals - Snacks',
+  'Uber Ride','Lyft Ride','Local Taxi'
+];
+
+function getLearnedJustifications() {
+  try { return JSON.parse(localStorage.getItem(JUST_STORAGE_KEY)) || []; } catch { return []; }
+}
+
+function learnJustification(val) {
+  val = (val || '').trim();
+  if (!val || DEFAULT_JUSTIFICATIONS.includes(val)) return;
+  var learned = getLearnedJustifications();
+  if (learned.includes(val)) return;
+  learned.unshift(val);
+  if (learned.length > 20) learned.splice(20);
+  localStorage.setItem(JUST_STORAGE_KEY, JSON.stringify(learned));
+  populateJustDatalist();
+}
+
+function populateJustDatalist() {
+  var dl = document.getElementById('justSuggestions');
+  if (!dl) return;
+  var all = DEFAULT_JUSTIFICATIONS.concat(
+    getLearnedJustifications().filter(function(v) { return !DEFAULT_JUSTIFICATIONS.includes(v); })
+  );
+  dl.innerHTML = all.map(function(v) {
+    return '<option value="' + v.replace(/"/g, '&quot;') + '">';
+  }).join('');
+}
 
 // ── PICKER SYSTEM ─────────────────────────────────────────────────────────────
 // One active picker tracked globally
@@ -1607,6 +1645,7 @@ function escHtml(str) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 initTheme();
+populateJustDatalist();
 // Clear old v1 single-slot draft key silently
 localStorage.removeItem('expenseReportDraft');
 checkRecovery();
