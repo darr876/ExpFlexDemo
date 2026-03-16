@@ -844,11 +844,15 @@ function renderExpenses() {
         </div>
         <div class="field">
           <label>Justification</label>
-          <input type="text" class="input" data-id="${e.id}" data-field="justification"
-            value="${e.justification}" placeholder="Reason for expense"
-            list="justSuggestions"
-            onkeydown="tabToAdd(event, ${e.id === lastId})"
-            onchange="learnJustification(this.value)">
+          <div style="position:relative;">
+            <input type="text" class="input" data-id="${e.id}" data-field="justification"
+              value="${e.justification}" placeholder="Reason for expense"
+              list="justSuggestions"
+              style="padding-right:32px;"
+              onkeydown="tabToAdd(event, ${e.id === lastId})"
+              onchange="learnJustification(this.value)">
+            <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--ink-muted);font-size:11px;pointer-events:none;">▾</span>
+          </div>
         </div>
       </div>
     </div>`;
