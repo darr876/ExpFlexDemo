@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>ExpenseFlex - Modern Expense Tracker</title>
+<title>ExpenseFlex</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* ── THEME C: RECEIPT ── */
@@ -386,6 +386,68 @@
   }
   .meal-warning.visible { display: block; }
 
+
+  /* ── RECEIPT TYPE BUTTONS ── */
+  .receipt-btns { display: flex; gap: 4px; }
+  .receipt-btn {
+    display: flex; align-items: center; gap: 3px;
+    padding: 3px 8px; border-radius: var(--radius);
+    border: 1.5px solid var(--border); background: var(--surface-2);
+    cursor: pointer; font-size: 12px; color: var(--ink-muted);
+    transition: all .15s; white-space: nowrap; font-family: var(--font-body);
+    line-height: 1.4;
+  }
+  .receipt-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .receipt-btn.active-paper { border-color: #c8a84b; background: #fffbee; color: #8a6d0a; font-weight: 600; }
+  .receipt-btn.active-email { border-color: #4b7ec8; background: #eef3ff; color: #1a4a9b; font-weight: 600; }
+  .receipt-btn.active-text  { border-color: #4bc87e; background: #eefff4; color: #1a7b42; font-weight: 600; }
+  [data-theme="dark"] .receipt-btn.active-paper { background: rgba(200,168,75,.15); }
+  [data-theme="dark"] .receipt-btn.active-email { background: rgba(75,126,200,.15); }
+  [data-theme="dark"] .receipt-btn.active-text  { background: rgba(75,200,126,.15); }
+
+  /* Receipt pill — mobile only */
+  .receipt-pill {
+    display: none; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px; cursor: pointer;
+    border: 1.5px solid var(--border); background: var(--surface-2);
+    font-size: 12px; font-weight: 500; color: var(--ink-muted);
+    transition: all .15s; white-space: nowrap; font-family: var(--font-body);
+    line-height: 1.4;
+  }
+  .receipt-pill.active-paper { border-color: #c8a84b; background: #fffbee; color: #8a6d0a; font-weight: 600; }
+  .receipt-pill.active-email { border-color: #4b7ec8; background: #eef3ff; color: #1a4a9b; font-weight: 600; }
+  .receipt-pill.active-text  { border-color: #4bc87e; background: #eefff4; color: #1a7b42; font-weight: 600; }
+  [data-theme="dark"] .receipt-pill.active-paper { background: rgba(200,168,75,.15); }
+  [data-theme="dark"] .receipt-pill.active-email { background: rgba(75,126,200,.15); }
+  [data-theme="dark"] .receipt-pill.active-text  { background: rgba(75,200,126,.15); }
+
+  /* Responsive switching */
+  @media (max-width: 600px) {
+    .receipt-btns { display: none; }
+    .receipt-pill { display: inline-flex; }
+  }
+
+
+  /* ── ROW NOTE ── */
+  .row-note-toggle {
+    background: none; border: none; color: var(--ink-muted); font-size: 11px;
+    cursor: pointer; padding: 0; font-family: var(--font-body);
+    transition: color .15s; display: inline-flex; align-items: center; gap: 3px;
+    margin-top: 6px;
+  }
+  .row-note-toggle:hover { color: var(--accent); }
+  .row-note-wrap { display: none; margin-top: 6px; }
+  .row-note-wrap.visible { display: block; }
+  .row-note-input {
+    width: 100%; padding: 7px 10px; border: 1.5px solid var(--border);
+    border-radius: var(--radius); background: var(--bg); color: var(--ink-soft);
+    font-family: var(--font-body); font-size: 13px; font-style: italic;
+    transition: border-color .15s; resize: none;
+    border-style: dashed;
+  }
+  .row-note-input:focus { outline: none; border-color: var(--accent); border-style: solid; font-style: normal; }
+  .row-note-input::placeholder { color: var(--ink-muted); }
+
   /* ── QUICK SCROLL ── */
   .scroll-btns {
     display: none; position: fixed; right: 16px; bottom: 80px;
@@ -595,9 +657,6 @@
     </div>
   </div>
 
-<!-- JUSTIFICATION DATALIST -->
-<datalist id="justSuggestions"></datalist>
-
 </div>
 
 <!-- QUICK SCROLL -->
@@ -667,48 +726,51 @@
 <!-- ── INFO MODAL ── -->
 <div class="modal-overlay" id="infoModal">
   <div class="modal" style="max-width:440px">
-    <h3>✦ What's New — v2</h3>
-    <p>Key features in this release:</p>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;">
+    <h3>✦ ExpenseFlex</h3>
+    <p style="margin-bottom:12px;">Feature overview — tap any time for a quick reference.</p>
+
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:4px;">
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">💾</span>
-        <div><strong style="font-size:13px;">Multi-project drafts</strong><br><span style="font-size:12px;color:var(--ink-muted);">Save multiple expense reports by name. Load, override, or save as a new copy anytime.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">💾</span>
+        <div><strong style="font-size:13px;">Multi-project drafts</strong><br><span style="font-size:12px;color:var(--ink-muted);">Save, load, override or copy named drafts. Auto-saved on every change — recoverable if the page refreshes.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">⚡</span>
-        <div><strong style="font-size:13px;">Auto-recovery</strong><br><span style="font-size:12px;color:var(--ink-muted);">Your session is saved automatically. If the page refreshes, your work is recovered in Load Draft.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">💱</span>
+        <div><strong style="font-size:13px;">Mixed currencies</strong><br><span style="font-size:12px;color:var(--ink-muted);">15 Americas &amp; Caribbean currencies. Set global or override per row. Rates auto-fetch, editable offline.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">💱</span>
-        <div><strong style="font-size:13px;">Live exchange rates &amp; mixed currencies</strong><br><span style="font-size:12px;color:var(--ink-muted);">15 Americas &amp; Caribbean currencies including DOP, BMD &amp; EUR. Set a global currency or override per row for mixed-currency trips. Rate auto-fetches, editable if offline.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🔖</span>
+        <div><strong style="font-size:13px;">Expense type picker</strong><br><span style="font-size:12px;color:var(--ink-muted);">Browse by category — Transport, Meals, Gifts, Emergency, Other.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">🔖</span>
-        <div><strong style="font-size:13px;">Expense type picker</strong><br><span style="font-size:12px;color:var(--ink-muted);">Click to browse by category or type to search. Transport, Meals, Gifts and more.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">💬</span>
+        <div><strong style="font-size:13px;">Justification dropdown</strong><br><span style="font-size:12px;color:var(--ink-muted);">Common options pre-loaded. Select "Other…" to type a custom entry.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">💬</span>
-        <div><strong style="font-size:13px;">Justification suggestions</strong><br><span style="font-size:12px;color:var(--ink-muted);">Pick from common options like Meals - Breakfast, Uber Ride and more. Select "Other…" to type a custom entry.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">📝</span>
+        <div><strong style="font-size:13px;">Row notes</strong><br><span style="font-size:12px;color:var(--ink-muted);">Tap "+ Add note" on any row to add a personal reminder (e.g. "JFK to Manhattan"). Saved with drafts, not in report output.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">🍽️</span>
-        <div><strong style="font-size:13px;">Meal policy quick reference</strong><br><span style="font-size:12px;color:var(--ink-muted);">Tap 'Meal Policy' next to Expenses for per-country meal limits. Rows warn automatically when a meal exceeds the policy limit.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🧾</span>
+        <div><strong style="font-size:13px;">Receipt type tag</strong><br><span style="font-size:12px;color:var(--ink-muted);">Mark each expense as Paper, Email or Text receipt. Display only.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">↕</span>
-        <div><strong style="font-size:13px;">Reorder &amp; group expenses</strong><br><span style="font-size:12px;color:var(--ink-muted);">Move rows up or down. Use Group by Type to sort all expenses by category at once.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🍽</span>
+        <div><strong style="font-size:13px;">Meal policy reference</strong><br><span style="font-size:12px;color:var(--ink-muted);">Tap "Meal Policy" next to Expenses. Rows warn when amount exceeds the per-country limit.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">⬆</span>
-        <div><strong style="font-size:13px;">Quick scroll</strong><br><span style="font-size:12px;color:var(--ink-muted);">Floating ↑↓ buttons appear when you have 5 or more expense rows.</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">↕</span>
+        <div><strong style="font-size:13px;">Reorder &amp; group</strong><br><span style="font-size:12px;color:var(--ink-muted);">Move rows up/down. Group by Type sorts by category then date.</span></div>
       </div>
       <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:16px;line-height:1.4;">🔢</span>
-        <div><strong style="font-size:13px;">Project # only</strong><br><span style="font-size:12px;color:var(--ink-muted);">Enter the project number and the task number fills itself (e.g. JK920 → JK921.01).</span></div>
+        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🔢</span>
+        <div><strong style="font-size:13px;">Project # only</strong><br><span style="font-size:12px;color:var(--ink-muted);">Task number auto-derives from project (e.g. JK920 → JK921.01).</span></div>
       </div>
     </div>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
-      <span style="font-size:11px;color:var(--ink-muted);font-style:italic;">Expense Type Category last checked: Feb 26, 2026</span>
+
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:11px;color:var(--ink-muted);font-style:italic;">Last updated: Mar 20, 2026</span>
+      <span style="font-size:11px;color:var(--ink-muted);font-style:italic;">Expense type categories last checked: Feb 26, 2026</span>
     </div>
     <div class="modal-btns">
       <button class="btn btn-primary" onclick="closeModal('infoModal')">Got it</button>
@@ -835,7 +897,9 @@ function addExpense(data = {}) {
     justification: data.justification || '',
     additional:    data.additional    || '',
     rowCurrency:   data.rowCurrency   || '',
-    rowRate:       data.rowRate       || ''
+    rowRate:       data.rowRate       || '',
+    receiptType:   data.receiptType   || '',
+    note:          data.note          || ''
   });
   renderExpenses();
   setTimeout(() => {
@@ -878,6 +942,8 @@ function collectExpenses() {
       additional:    getVal(e.id, 'additional'),
       rowCurrency:   rowCurrencySel ? rowCurrencySel.value : (e.rowCurrency || ''),
       rowRate:       rowRateInp     ? rowRateInp.value     : (e.rowRate     || ''),
+      receiptType:   e.receiptType || '',
+      note:          (function(){ var n = document.getElementById('rowNote-' + e.id); return n ? n.value : (e.note || ''); })(),
     };
   });
 }
@@ -911,6 +977,15 @@ function renderExpenses() {
     <div class="expense-row ${i % 2 === 1 ? 'even' : ''}" data-idx="${i}">
       <div class="expense-row-header">
         <span class="expense-num">#${i + 1}</span>
+        <div class="receipt-btns">
+          <button class="receipt-btn ${e.receiptType==='paper'?'active-paper':''}" onclick="setReceiptType(${e.id},'paper')" title="Paper receipt">🧾</button>
+          <button class="receipt-btn ${e.receiptType==='email'?'active-email':''}" onclick="setReceiptType(${e.id},'email')" title="Email receipt">📧</button>
+          <button class="receipt-btn ${e.receiptType==='text'?'active-text':''}"  onclick="setReceiptType(${e.id},'text')"  title="Text/SMS receipt">📱</button>
+        </div>
+        <button class="receipt-pill ${e.receiptType==='paper'?'active-paper':e.receiptType==='email'?'active-email':e.receiptType==='text'?'active-text':''}"
+          id="receiptPill-${e.id}" onclick="cyclePill(${e.id})" title="Tap to set receipt type">
+          ${e.receiptType==='paper'?'🧾 Paper':e.receiptType==='email'?'📧 Email':e.receiptType==='text'?'📱 Text':'🧾 Receipt'}
+        </button>
         <button class="btn-move" onclick="moveExpense(${i}, -1)" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
         <button class="btn-move" onclick="moveExpense(${i}, 1)"  ${isLast  ? 'disabled' : ''} title="Move down">↓</button>
         <button class="btn-icon" onclick="removeExpense(${e.id})" title="Remove expense">
@@ -952,19 +1027,30 @@ function renderExpenses() {
             <option value="Meals - Lunch" ${e.justification==="Meals - Lunch"?"selected":""}>Meals - Lunch</option>
             <option value="Meals - Dinner" ${e.justification==="Meals - Dinner"?"selected":""}>Meals - Dinner</option>
             <option value="Meals - Snacks" ${e.justification==="Meals - Snacks"?"selected":""}>Meals - Snacks</option>
-            <option value="Meals - Coffee/Tea" ${e.justification==="Meals - Coffee/Tea"?"selected":""}>Meals - Coffee/Tea</option>
+            <option value="Meals - Coffee-Tea" ${e.justification==="Meals - Coffee-Tea"||e.justification==="Meals - Coffee-Tea"?"selected":""}>Meals - Coffee/Tea</option>
             <option value="Uber Ride" ${e.justification==="Uber Ride"?"selected":""}>Uber Ride</option>
             <option value="Lyft Ride" ${e.justification==="Lyft Ride"?"selected":""}>Lyft Ride</option>
             <option value="Local Taxi" ${e.justification==="Local Taxi"?"selected":""}>Local Taxi</option>
-            <option value="__other__" ${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"selected":""}>Other…</option>
+            <option value="__other__" ${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"selected":""}>Other…</option>
           </select>
           <input type="text" class="input" id="justOther-${e.id}" data-id="${e.id}" data-field="justification"
-            value="${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee/Tea","Uber Ride","Lyft Ride","Local Taxi"].includes(e.justification)?e.justification:""}"
+            value="${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi"].includes(e.justification)?e.justification:""}"
             placeholder="Describe the expense…"
-            style="margin-top:6px;display:${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"block":"none"};"
+            style="margin-top:6px;display:${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"block":"none"};"
             onkeydown="tabToAdd(event, ${e.id === lastId})">
         </div>
         <div class="meal-warning" id="mealWarn-${e.id}"></div>
+
+        <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
+          <button class="row-note-toggle" onclick="toggleRowNote(${e.id})" id="rowNoteToggle-${e.id}">
+            ${e.note ? '📝 ' + e.note.substring(0,30) + (e.note.length>30?'…':'') : '+ Add note'}
+          </button>
+        </div>
+        <div class="row-note-wrap ${e.note ? 'visible' : ''}" id="rowNoteWrap-${e.id}">
+          <textarea class="row-note-input" id="rowNote-${e.id}" rows="2"
+            placeholder="e.g. JFK to Manhattan, Joe's Diner Kingston…"
+            oninput="onNoteInput(${e.id}, this.value)">${e.note || ''}</textarea>
+        </div>
 
         <div style="margin-top:6px;">
           <button class="row-currency-toggle" onclick="toggleRowCurrency(${e.id})">
@@ -1290,8 +1376,7 @@ function getLearnedJustifications() {
 
 function clearLearnedJustifications() {
   localStorage.removeItem(JUST_STORAGE_KEY);
-  populateJustDatalist();
-  toast('Learned suggestions cleared', 'amber');
+    toast('Learned suggestions cleared', 'amber');
 }
 
 function learnJustification(val) {
@@ -1302,19 +1387,8 @@ function learnJustification(val) {
   learned.unshift(val);
   if (learned.length > 20) learned.splice(20);
   localStorage.setItem(JUST_STORAGE_KEY, JSON.stringify(learned));
-  populateJustDatalist();
-}
+  }
 
-function populateJustDatalist() {
-  var dl = document.getElementById('justSuggestions');
-  if (!dl) return;
-  var all = DEFAULT_JUSTIFICATIONS.concat(
-    getLearnedJustifications().filter(function(v) { return !DEFAULT_JUSTIFICATIONS.includes(v); })
-  );
-  dl.innerHTML = all.map(function(v) {
-    return '<option value="' + v.replace(/"/g, '&quot;') + '">';
-  }).join('');
-}
 
 // ── PICKER SYSTEM ─────────────────────────────────────────────────────────────
 // One active picker tracked globally
@@ -1647,6 +1721,94 @@ function checkMealWarning(expId) {
 
 function checkAllMealWarnings() {
   expenses.forEach(function(e){ checkMealWarning(e.id); });
+}
+
+
+// ── RECEIPT TYPE ──────────────────────────────────────────────────────────────
+
+function cyclePill(expId) {
+  var exp    = expenses.find(function(e){ return e.id === expId; });
+  var states = ['', 'paper', 'email', 'text'];
+  var cur    = exp ? states.indexOf(exp.receiptType || '') : 0;
+  var next   = states[(cur + 1) % states.length];
+  setReceiptType(expId, next || '__clear__');
+  // Handle clear case
+  if (!next) {
+    if (exp) exp.receiptType = '';
+    var pill = document.getElementById('receiptPill-' + expId);
+    if (pill) {
+      pill.classList.remove('active-paper','active-email','active-text');
+      pill.textContent = '🧾 Receipt';
+    }
+    ['paper','email','text'].forEach(function(t) {
+      var btn = document.querySelector('[onclick="setReceiptType(' + expId + ',\'' + t + '\')"]');
+      if (btn) { btn.classList.remove('active-paper','active-email','active-text'); btn.textContent = {paper:'🧾',email:'📧',text:'📱'}[t]; }
+    });
+    scheduleAutoSave();
+  }
+}
+
+function setReceiptType(expId, type) {
+  var exp = expenses.find(function(e){ return e.id === expId; });
+  var icons = { paper: '🧾', email: '📧', text: '📱' };
+  var activeClass = { paper: 'active-paper', email: 'active-email', text: 'active-text' };
+
+  // Toggle off if already active
+  var newType = (exp && exp.receiptType === type) ? '' : type;
+  if (exp) exp.receiptType = newType;
+
+  // Update button states without re-rendering entire list
+  ['paper','email','text'].forEach(function(t) {
+    var btn = document.querySelector('[onclick="setReceiptType(' + expId + ',\'' + t + '\')"]');
+    if (!btn) return;
+    btn.classList.remove('active-paper','active-email','active-text');
+    btn.textContent = icons[t];
+    if (newType === t) {
+      btn.classList.add(activeClass[t]);
+      btn.textContent = icons[t] + ' ' + t.charAt(0).toUpperCase() + t.slice(1);
+    }
+  });
+
+  // Sync pill
+  var pill = document.getElementById('receiptPill-' + expId);
+  if (pill) {
+    pill.classList.remove('active-paper','active-email','active-text');
+    if (newType) {
+      pill.classList.add(activeClass[newType]);
+      pill.textContent = icons[newType] + ' ' + newType.charAt(0).toUpperCase() + newType.slice(1);
+    } else {
+      pill.textContent = '🧾 Receipt';
+    }
+  }
+
+  scheduleAutoSave();
+}
+
+
+// ── ROW NOTES ─────────────────────────────────────────────────────────────────
+function toggleRowNote(expId) {
+  var wrap   = document.getElementById('rowNoteWrap-' + expId);
+  var toggle = document.getElementById('rowNoteToggle-' + expId);
+  if (!wrap) return;
+  var visible = wrap.classList.contains('visible');
+  wrap.classList.toggle('visible');
+  if (!visible) {
+    var ta = document.getElementById('rowNote-' + expId);
+    if (ta) setTimeout(function(){ ta.focus(); }, 50);
+  } else {
+    // On hide, update toggle label
+    var exp = expenses.find(function(e){ return e.id === expId; });
+    var note = exp ? (exp.note || '') : '';
+    if (toggle) toggle.textContent = note ? '📝 ' + note.substring(0,30) + (note.length>30?'…':'') : '+ Add note';
+  }
+}
+
+function onNoteInput(expId, val) {
+  var exp = expenses.find(function(e){ return e.id === expId; });
+  if (exp) exp.note = val;
+  var toggle = document.getElementById('rowNoteToggle-' + expId);
+  if (toggle) toggle.textContent = val.trim() ? '📝 ' + val.trim().substring(0,30) + (val.trim().length>30?'…':'') : '+ Add note';
+  scheduleAutoSave();
 }
 
 // ── REPORT ────────────────────────────────────────────────────────────────────
@@ -2034,7 +2196,6 @@ function escHtml(str) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 initTheme();
-populateJustDatalist();
 // Clear old v1 single-slot draft key silently
 localStorage.removeItem('expenseReportDraft');
 checkRecovery();
