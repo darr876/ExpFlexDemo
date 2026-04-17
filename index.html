@@ -612,7 +612,7 @@
   <div class="card">
     <div class="card-toolbar">
       <div class="card-title"></div>
-      <button class="btn btn-ghost btn-sm" id="groupByTypeBtn" onclick="groupByType()" style="display:none">⇅ Group by Type</button>
+      <button class="btn btn-ghost btn-sm" id="groupByTypeBtn" onclick="groupByType()" style="display:none">⇅ Group by Date &amp; Type</button>
     </div>
     <div class="card-body">
       <div id="expenseList" class="expense-list"></div>
@@ -725,107 +725,220 @@
 
 <!-- ── INFO MODAL ── -->
 <div class="modal-overlay" id="infoModal">
-  <div class="modal" style="max-width:440px">
+  <div class="modal" style="max-width: 440px;">
     <h3>✦ ExpenseFlex</h3>
-    <p style="margin-bottom:12px;">Feature overview — tap any time for a quick reference.</p>
+    <p style="margin-bottom: 12px;">Feature overview — tap any time for a quick reference.</p>
 
-    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:4px;">
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">💾</span>
-        <div><strong style="font-size:13px;">Multi-project drafts</strong><br><span style="font-size:12px;color:var(--ink-muted);">Save, load, override or copy named drafts. Auto-saved on every change — recoverable if the page refreshes.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 4px;">
+      
+      <div class="info-row">
+        <span class="info-icon">💾</span>
+        <div>
+          <strong class="info-title">Multi-project drafts</strong>
+          <p class="info-desc">Save, load, override or copy named drafts. Auto-saved on every change — recoverable if the page refreshes.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">💱</span>
-        <div><strong style="font-size:13px;">Mixed currencies</strong><br><span style="font-size:12px;color:var(--ink-muted);">15 Americas &amp; Caribbean currencies. Set global or override per row. Rates auto-fetch, editable offline.</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">💱</span>
+        <div>
+          <strong class="info-title">Mixed currencies</strong>
+          <p class="info-desc">15 Americas &amp; Caribbean currencies. Set global or override per row. Rates auto-fetch, editable offline.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🔖</span>
-        <div><strong style="font-size:13px;">Expense type picker</strong><br><span style="font-size:12px;color:var(--ink-muted);">Browse by category — Transport, Meals, Gifts, Emergency, Other.</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">🔖</span>
+        <div>
+          <strong class="info-title">Expense type picker</strong>
+          <p class="info-desc">Browse by category — Transport, Meals, Gifts, Emergency, Other.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">💬</span>
-        <div><strong style="font-size:13px;">Justification dropdown</strong><br><span style="font-size:12px;color:var(--ink-muted);">Common options pre-loaded. Select "Other…" to type a custom entry.</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">💬</span>
+        <div>
+          <strong class="info-title">Justification dropdown</strong>
+          <p class="info-desc">Common options pre-loaded. Select "Other…" to type a custom entry.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">📝</span>
-        <div><strong style="font-size:13px;">Row notes</strong><br><span style="font-size:12px;color:var(--ink-muted);">Tap "+ Add note" on any row to add a personal reminder (e.g. "JFK to Manhattan"). Saved with drafts, not in report output.</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">📝</span>
+        <div>
+          <strong class="info-title">Row notes</strong>
+          <p class="info-desc">Tap "+ Add note" on any row for personal reminders (e.g. "JFK to Manhattan"). Saved with drafts, not in report output.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🧾</span>
-        <div><strong style="font-size:13px;">Receipt type tag</strong><br><span style="font-size:12px;color:var(--ink-muted);">Mark each expense as Paper, Email or Text receipt. Display only.</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">🧾</span>
+        <div>
+          <strong class="info-title">Receipt type tag</strong>
+          <p class="info-desc">Mark each expense as Paper, Email or Text receipt. Display only.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🍽</span>
-        <div><strong style="font-size:13px;">Meal policy reference</strong><br><span style="font-size:12px;color:var(--ink-muted);">Tap "Meal Policy" next to Expenses. Rows warn when amount exceeds the per-country limit.</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">🍽</span>
+        <div>
+          <strong class="info-title">Meal policy reference</strong>
+          <p class="info-desc">Tap "Meal Policy" next to Expenses. Rows warn when amount exceeds the per-country limit.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">↕</span>
-        <div><strong style="font-size:13px;">Reorder &amp; group</strong><br><span style="font-size:12px;color:var(--ink-muted);">Move rows up/down. Group by Type sorts by category then date.</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">↕</span>
+        <div>
+          <strong class="info-title">Reorder &amp; group</strong>
+          <p class="info-desc">Move rows up/down. Group by Date &amp; Type Button.</p>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-start;">
-        <span style="color:var(--accent);font-size:15px;line-height:1.5;">🔢</span>
-        <div><strong style="font-size:13px;">Project # only</strong><br><span style="font-size:12px;color:var(--ink-muted);">Task number auto-derives from project (e.g. JK920 → JK921.01).</span></div>
+
+      <div class="info-row">
+        <span class="info-icon">🔢</span>
+        <div>
+          <strong class="info-title">Project # only</strong>
+          <p class="info-desc">Task number auto-derives from project (e.g. JK920 → JK921.01).</p>
+        </div>
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:3px;">
-      <span style="font-size:11px;color:var(--ink-muted);font-style:italic;">Last updated: Mar 20, 2026</span>
-      <span style="font-size:11px;color:var(--ink-muted);font-style:italic;">Expense type categories last checked: Feb 26, 2026</span>
+    <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 3px;">
+      <span class="meta-text">Last updated: Apr 7, 2026</span>
+	  <span class="meta-text">Updated: Meal Policy for Caribbean, Category Sorting Fixed</span>
+      <span class="meta-text">Expense type categories last checked: Feb 26, 2026</span>
     </div>
-    <div class="modal-btns">
+
+    <div class="modal-btns" style="margin-top: 12px;">
       <button class="btn btn-primary" onclick="closeModal('infoModal')">Got it</button>
     </div>
-    <div class="modal-close-btn">
-      <button class="btn-link" onclick="closeModal('infoModal')" style="color:var(--ink-muted);font-size:12px;">✕ Close</button>
+
+    <div class="modal-close-btn" style="text-align: center; margin-top: 8px;">
+      <button class="btn-link" onclick="closeModal('infoModal')" style="color: var(--ink-muted); font-size: 12px; border: none; background: none; cursor: pointer;">✕ Close</button>
     </div>
   </div>
 </div>
 
-<!-- ── MEAL POLICY MODAL ── -->
+<style>
+  .info-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .info-icon {
+    color: var(--accent);
+    font-size: 16px;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+  .info-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .info-desc {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin: 0;
+    line-height: 1.4;
+  }
+  .meta-text {
+    font-size: 11px;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+</style>
+
+<!-- ── MEAL INFO MODAL ── -->
 <div class="modal-overlay" id="mealPolicyModal">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width: 480px;">
     <h3>🍽 Meal Policy Limits</h3>
-    <p>Maximum reimbursable meal amount per main meal, inclusive of drinks and gratuity. For countries not listed, the general limit is <strong>$50 USD</strong>.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;">
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:var(--ink-soft);">🇺🇸 USD</span>
-        <span style="font-size:13px;font-weight:600;color:var(--ink);">$70.00</span>
+    <p>
+      Maximum reimbursable meal amount per main meal, inclusive of drinks and gratuity. 
+      For countries not listed, the general limit is <strong>$50 USD</strong>.
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px;">
+      
+      <div class="policy-item">
+        <span class="currency-label">🇺🇸 USD</span>
+        <span class="currency-value">$70.00</span>
       </div>
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:var(--ink-soft);">🇨🇦 CAD</span>
-        <span style="font-size:13px;font-weight:600;color:var(--ink);">$70.00</span>
+
+      <div class="policy-item">
+        <span class="currency-label">🇨🇦 CAD</span>
+        <span class="currency-value">$70.00</span>
       </div>
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:var(--ink-soft);">🇪🇺 EUR</span>
-        <span style="font-size:13px;font-weight:600;color:var(--ink);">€55.00</span>
+
+      <div class="policy-item">
+        <span class="currency-label">🇪🇺 EUR</span>
+        <span class="currency-value">€55.00</span>
       </div>
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:var(--ink-soft);">🇧🇷 BRL</span>
-        <span style="font-size:13px;font-weight:600;color:var(--ink);">R$250.00</span>
+
+      <div class="policy-item">
+        <span class="currency-label">🇧🇷 BRL</span>
+        <span class="currency-value">R$250.00</span>
       </div>
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:var(--ink-soft);">🇲🇽 MXN</span>
-        <span style="font-size:13px;font-weight:600;color:var(--ink);">$500.00</span>
+
+      <div class="policy-item">
+        <span class="currency-label">🇲🇽 MXN</span>
+        <span class="currency-value">$500.00</span>
       </div>
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:var(--ink-soft);">🇨🇴 COP</span>
-        <span style="font-size:13px;font-weight:600;color:var(--ink);">$125,000</span>
+
+      <div class="policy-item">
+        <span class="currency-label">🇨🇴 COP</span>
+        <span class="currency-value">$125,000</span>
       </div>
-      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;grid-column:1/-1;">
-        <span style="font-size:13px;color:var(--ink-soft);">🌍 All others</span>
-        <span style="font-size:13px;font-weight:600;color:var(--ink);">~$50 USD equiv.</span>
+
+      <div class="policy-item full-width">
+        <span class="currency-label">🏝️☀️ Caribbean Region</span>
+        <span class="currency-value">$60 USD</span>
+      </div>
+
+      <div class="policy-item full-width">
+        <span class="currency-label">🌍 All others</span>
+        <span class="currency-value">~$50 USD equiv.</span>
       </div>
     </div>
-    <div style="margin-top:12px;font-size:11px;color:var(--ink-muted);font-style:italic;">
-      Based on company Travel &amp; Expense Policy · July 2025. Limits are per main meal including drinks &amp; gratuity.
+
+    <div style="margin-top: 16px; font-size: 11px; color: var(--ink-muted); font-style: italic; line-height: 1.4;">
+      Based on company Travel &amp; Expense Policy · July 2025. 
+      Limits are per main meal including drinks &amp; gratuity.
     </div>
-    <div class="modal-btns">
+
+    <div class="modal-btns" style="margin-top: 20px;">
       <button class="btn btn-primary" onclick="closeModal('mealPolicyModal')">Got it</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<style>
+  .policy-item {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  .currency-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .currency-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+</style>
 
 <script>
 const COST_CENTER = atob('MTAyNDE=');
@@ -1521,20 +1634,21 @@ function moveExpense(idx, dir) {
   expenses[newIdx] = tmp;
   renderExpenses();
 }
-
+// ── GROUP BY TYPE (UPDATED SORT LOGIC) ───────────────────────────────────────
 function groupByType() {
   collectExpenses();
-  var order = EXPENSE_CATEGORIES.map(function(c) { return c.label; });
-  expenses.sort(function(a, b) {
-    var ai = order.indexOf(getCategoryForType(a.type));
-    var bi = order.indexOf(getCategoryForType(b.type));
-    if (ai !== bi) return ai - bi;
-    // Within same category, sort by date oldest first
-    var da = a.date || '';
-    var db = b.date || '';
-    if (da < db) return -1;
-    if (da > db) return 1;
-    return 0;
+
+  expenses.sort((a, b) => {
+    // 1. Sort by DATE first
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+
+    if (dateA - dateB !== 0) {
+      return dateA - dateB;
+    }
+
+    // 2. Then sort by TYPE (alphabetical)
+    return (a.type || '').localeCompare(b.type || '');
   });
   renderExpenses();
   toast('Grouped by type & sorted by date', 'green');
@@ -1665,34 +1779,43 @@ const MEAL_LIMITS = {
   ARS: null, CLP: null, PEN: null, JMD: null, DOP: null,
   BMD: null, TTD: null, BBD: null, XCD: null
 };
+
+// Currencies subject to the $60 USD limit
+const CARIBBEAN_CURRENCIES = ['JMD', 'DOP', 'BMD', 'TTD', 'BBD', 'XCD'];
+
 const MEAL_TYPES = ['Meals'];
 const FALLBACK_MEAL_USD = 50;
+const CARIBBEAN_MEAL_USD = 60;
 
 function checkMealWarning(expId) {
-  var warn    = document.getElementById('mealWarn-' + expId);
+  var warn = document.getElementById('mealWarn-' + expId);
   if (!warn) return;
 
-  var exp     = expenses.find(function(e){ return e.id === expId; });
+  var exp = expenses.find(function(e) { return e.id === expId; });
   var typeInp = document.getElementById('typeInput-' + expId);
-  var amtEl   = document.querySelector('[data-id="' + expId + '"][data-field="amount"]');
+  var amtEl = document.querySelector('[data-id="' + expId + '"][data-field="amount"]');
 
   if (!amtEl) { warn.classList.remove('visible'); return; }
 
   var expType = (typeInp ? typeInp.value : (exp ? exp.type : '')) || '';
-  var isMeal  = MEAL_TYPES.some(function(t){ return expType === t; });
-  if (!isMeal) { warn.classList.remove('visible'); warn.textContent = ''; return; }
+  var isMeal = MEAL_TYPES.some(function(t) { return expType === t; });
+  
+  if (!isMeal) {
+    warn.classList.remove('visible');
+    warn.textContent = '';
+    return;
+  }
 
-  var amount  = parseFloat(amtEl.value) || 0;
+  var amount = parseFloat(amtEl.value) || 0;
   if (!amount) { warn.classList.remove('visible'); return; }
 
-  // Determine currency and limit
+  // Determine currency
   var rowCurEl = document.getElementById('rowCurrencySel-' + expId);
   var currency = (rowCurEl && rowCurEl.value) || document.getElementById('globalCurrency')?.value || 'USD';
-
-  var limit    = MEAL_LIMITS[currency];
+  var limit = MEAL_LIMITS[currency];
 
   if (limit !== undefined && limit !== null) {
-    // We have a direct limit for this currency
+    // Case 1: Direct limit (e.g., USD, CAD, EUR)
     if (amount > limit) {
       warn.textContent = '⚠ Meal exceeds company policy limit of ' + limit + ' ' + currency + ' per meal.';
       warn.classList.add('visible');
@@ -1700,27 +1823,33 @@ function checkMealWarning(expId) {
       warn.classList.remove('visible');
     }
   } else {
-    // No direct limit — try to convert using known rate and compare to $50 USD
+    // Case 2: Conversion needed
     var rowRateEl = document.getElementById('rowRateInp-' + expId);
     var globalRate = parseFloat(document.getElementById('rateEdit')?.value) || 0;
     var rate = (rowRateEl && parseFloat(rowRateEl.value)) || globalRate;
+
     if (rate > 0) {
       var usdEquiv = amount * rate;
-      if (usdEquiv > FALLBACK_MEAL_USD) {
-        warn.textContent = '⚠ Meal exceeds company policy limit of ~$' + FALLBACK_MEAL_USD + ' USD (approx. $' + usdEquiv.toFixed(2) + ' USD equivalent).';
+      
+      // Select appropriate USD limit based on region
+      var isCaribbean = CARIBBEAN_CURRENCIES.indexOf(currency) !== -1;
+      var activeLimit = isCaribbean ? CARIBBEAN_MEAL_USD : FALLBACK_MEAL_USD;
+
+      if (usdEquiv > activeLimit) {
+        warn.textContent = '⚠ Meal exceeds ' + (isCaribbean ? 'Caribbean' : 'standard') + 
+                           ' policy limit of ~$' + activeLimit + ' USD (approx. $' + usdEquiv.toFixed(2) + ' USD equiv).';
         warn.classList.add('visible');
       } else {
         warn.classList.remove('visible');
       }
     } else {
-      // No rate available — skip warning
       warn.classList.remove('visible');
     }
   }
 }
 
 function checkAllMealWarnings() {
-  expenses.forEach(function(e){ checkMealWarning(e.id); });
+  expenses.forEach(function(e) { checkMealWarning(e.id); });
 }
 
 
