@@ -140,16 +140,57 @@
   .expense-list { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
   .expense-row {
     background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: var(--radius); padding: 12px 14px;
+    border-radius: var(--radius); padding: 0;
     position: relative; animation: slideIn .2s ease;
-    transition: box-shadow .15s;
+    transition: box-shadow .15s, border-color .15s;
+    overflow: hidden;
   }
   .expense-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+  .expense-row.collapsed { border-color: var(--border); }
+  
+  .expense-row-header {
+    display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+    cursor: pointer; user-select: none;
+  }
+  .expense-row-header:hover { background: var(--surface-2); }
+  
+  .collapse-chevron {
+    font-size: 10px; color: var(--ink-muted); transition: transform 0.2s ease;
+    width: 14px; display: flex; align-items: center; justify-content: center;
+  }
+  .expense-row.collapsed .collapse-chevron { transform: rotate(-90deg); }
+
+  .expense-row-summary {
+    display: none; flex: 1; gap: 12px; font-size: 12px; color: var(--ink-soft);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-items: center;
+  }
+  .expense-row.collapsed .expense-row-summary { display: flex; animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .summary-date { font-weight: 600; min-width: 65px; font-family: var(--font-mono); font-size: 11px; }
+  .summary-type { color: var(--ink-muted); font-style: italic; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .summary-amount { font-weight: 700; color: var(--ink); margin-left: auto; margin-right: 8px; font-family: var(--font-mono); }
+
+  .expense-row-content {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    opacity: 1;
+    overflow: hidden;
+  }
+  .expense-row.collapsed .expense-row-content {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .expense-row-content-inner {
+    overflow: hidden;
+    padding: 0 14px 14px;
+    min-height: 0;
+  }
+
   .expense-row.even { background: var(--surface-2); }
   @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-  .expense-row-header {
-    display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
-  }
   .expense-row-header .expense-num { margin-right: auto; }
   .expense-num {
     font-family: var(--font-display); font-size: 11px; font-weight: 700;
@@ -369,7 +410,7 @@
     background: var(--surface-2); border: 1px solid var(--border);
     border-radius: var(--radius); gap: 10px;
   }
-  .row-currency-override.visible { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+  .row-currency-override.visible { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
   .row-currency-override .field { margin-bottom: 0; flex: 1; min-width: 120px; }
   .row-rate-banner {
     font-size: 11px; color: var(--ink-muted); margin-top: 4px; min-height: 16px;
@@ -612,7 +653,10 @@
   <div class="card">
     <div class="card-toolbar">
       <div class="card-title"></div>
-      <button class="btn btn-ghost btn-sm" id="groupByTypeBtn" onclick="groupByType()" style="display:none">⇅ Group by Date &amp; Type</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" id="collapseAllBtn" onclick="toggleAllExpenses()" style="display:none">Collapse All</button>
+        <button class="btn btn-ghost btn-sm" id="groupByTypeBtn" onclick="groupByType()" style="display:none">⇅ Group by Date &amp; Type</button>
+      </div>
     </div>
     <div class="card-body">
       <div id="expenseList" class="expense-list"></div>
@@ -1065,11 +1109,18 @@ function renderExpenses() {
   const list     = document.getElementById('expenseList');
   const empty    = document.getElementById('emptyState');
   const totalRow = document.getElementById('totalRow');
-  const groupBtn = document.getElementById('groupByTypeBtn');
+  const groupBtn    = document.getElementById('groupByTypeBtn');
+  const collapseBtn = document.getElementById('collapseAllBtn');
 
   // Show/hide group button and scroll buttons
   const showExtras = expenses.length >= 5;
   if (groupBtn) groupBtn.style.display = expenses.length > 1 ? 'inline-flex' : 'none';
+  if (collapseBtn) {
+    collapseBtn.style.display = expenses.length > 1 ? 'inline-flex' : 'none';
+    const anyExpanded = expenses.some(e => !e.isCollapsed);
+    collapseBtn.textContent = anyExpanded ? 'Collapse All' : 'Expand All';
+    console.log('Update button: anyExpanded=' + anyExpanded + ', count=' + expenses.length);
+  }
   updateScrollBtns();
 
   if (expenses.length === 0) {
@@ -1085,23 +1136,33 @@ function renderExpenses() {
   list.innerHTML = expenses.map((e, i) => {
     const isFirst = i === 0;
     const isLast  = i === expenses.length - 1;
-    const safeType = e.type.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const safeType = (e.type || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const isCollapsed = !!e.isCollapsed;
+    
     return `
-    <div class="expense-row ${i % 2 === 1 ? 'even' : ''}" data-idx="${i}">
-      <div class="expense-row-header">
+    <div class="expense-row ${i % 2 === 1 ? 'even' : ''} ${isCollapsed ? 'collapsed' : ''}" id="expRow-${e.id}" data-idx="${i}">
+      <div class="expense-row-header" onclick="toggleCollapse(${e.id}, event)">
+        <span class="collapse-chevron">▾</span>
         <span class="expense-num">#${i + 1}</span>
-        <div class="receipt-btns">
+        
+        <div class="expense-row-summary">
+          <span class="summary-date">${fmtDate(e.date) || '—'}</span>
+          <span class="summary-type">${e.type || 'No type'}</span>
+          <span class="summary-amount">${e.amount ? '$' + parseFloat(e.amount).toFixed(2) : '$0.00'}</span>
+        </div>
+
+        <div class="receipt-btns" onclick="event.stopPropagation()">
           <button class="receipt-btn ${e.receiptType==='paper'?'active-paper':''}" onclick="setReceiptType(${e.id},'paper')" title="Paper receipt">🧾</button>
           <button class="receipt-btn ${e.receiptType==='email'?'active-email':''}" onclick="setReceiptType(${e.id},'email')" title="Email receipt">📧</button>
           <button class="receipt-btn ${e.receiptType==='text'?'active-text':''}"  onclick="setReceiptType(${e.id},'text')"  title="Text/SMS receipt">📱</button>
         </div>
         <button class="receipt-pill ${e.receiptType==='paper'?'active-paper':e.receiptType==='email'?'active-email':e.receiptType==='text'?'active-text':''}"
-          id="receiptPill-${e.id}" onclick="cyclePill(${e.id})" title="Tap to set receipt type">
+          id="receiptPill-${e.id}" onclick="event.stopPropagation(); cyclePill(${e.id})" title="Tap to set receipt type">
           ${e.receiptType==='paper'?'🧾 Paper':e.receiptType==='email'?'📧 Email':e.receiptType==='text'?'📱 Text':'🧾 Receipt'}
         </button>
-        <button class="btn-move" onclick="moveExpense(${i}, -1)" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
-        <button class="btn-move" onclick="moveExpense(${i}, 1)"  ${isLast  ? 'disabled' : ''} title="Move down">↓</button>
-        <button class="btn-icon" onclick="removeExpense(${e.id})" title="Remove expense">
+        <button class="btn-move" onclick="event.stopPropagation(); moveExpense(${i}, -1)" ${isFirst ? 'disabled' : ''} title="Move up">↑</button>
+        <button class="btn-move" onclick="event.stopPropagation(); moveExpense(${i}, 1)"  ${isLast  ? 'disabled' : ''} title="Move down">↓</button>
+        <button class="btn-icon" onclick="event.stopPropagation(); removeExpense(${e.id})" title="Remove expense">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
@@ -1109,107 +1170,156 @@ function renderExpenses() {
           </svg>
         </button>
       </div>
-      <div class="row-2">
-        <div class="field">
-          <label>Date</label>
-          <input type="date" class="input exp-date" data-id="${e.id}" data-field="date" value="${e.date}" oninput="updateTotal()">
-        </div>
-        <div class="field">
-          <label>Receipt Amount</label>
-          <input type="number" step="0.01" class="input" data-id="${e.id}" data-field="amount" value="${e.amount}" placeholder="0.00" oninput="updateTotal()">
-        </div>
-      </div>
-      <div class="row-2">
-        <div class="field">
-          <label>Expense Type</label>
-          <div class="type-picker" id="picker-${e.id}">
-            <div class="type-trigger" id="trigger-${e.id}" onclick="toggleTypePicker(${e.id}, event)">
-              <span class="type-display ${e.type ? '' : 'placeholder'}" id="typeDisplay-${e.id}">${e.type || 'Select type…'}</span>
-              <input type="hidden" id="typeInput-${e.id}" data-id="${e.id}" data-field="type" value="${e.type}">
-              <span class="type-chevron">▾</span>
-            </div>
-            <div class="type-panel" id="panel-${e.id}"></div>
+
+      <div class="expense-row-content">
+        <div class="expense-row-content-inner">
+          <div class="row-2" style="margin-top:10px;">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" class="input exp-date" data-id="${e.id}" data-field="date" value="${e.date}" oninput="updateTotal()">
+          </div>
+          <div class="field">
+            <label>Receipt Amount</label>
+            <input type="number" step="0.01" class="input" data-id="${e.id}" data-field="amount" value="${e.amount}" placeholder="0.00" oninput="updateTotal()">
           </div>
         </div>
-        <div class="field">
-          <label>Justification</label>
-          <select class="input" data-id="${e.id}" data-field="justification-select"
-            onchange="onJustSelectChange(${e.id}, this.value)">
-            <option value="">-- Select --</option>
-            <option value="Meals - Breakfast" ${e.justification==="Meals - Breakfast"?"selected":""}>Meals - Breakfast</option>
-            <option value="Meals - Lunch" ${e.justification==="Meals - Lunch"?"selected":""}>Meals - Lunch</option>
-            <option value="Meals - Dinner" ${e.justification==="Meals - Dinner"?"selected":""}>Meals - Dinner</option>
-            <option value="Meals - Snacks" ${e.justification==="Meals - Snacks"?"selected":""}>Meals - Snacks</option>
-            <option value="Meals - Coffee-Tea" ${e.justification==="Meals - Coffee-Tea"||e.justification==="Meals - Coffee-Tea"?"selected":""}>Meals - Coffee/Tea</option>
-            <option value="Uber Ride" ${e.justification==="Uber Ride"?"selected":""}>Uber Ride</option>
-            <option value="Lyft Ride" ${e.justification==="Lyft Ride"?"selected":""}>Lyft Ride</option>
-            <option value="Local Taxi" ${e.justification==="Local Taxi"?"selected":""}>Local Taxi</option>
-            <option value="__other__" ${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"selected":""}>Other…</option>
-          </select>
-          <input type="text" class="input" id="justOther-${e.id}" data-id="${e.id}" data-field="justification"
-            value="${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi"].includes(e.justification)?e.justification:""}"
-            placeholder="Describe the expense…"
-            style="margin-top:6px;display:${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"block":"none"};"
-            onkeydown="tabToAdd(event, ${e.id === lastId})">
+        <div class="row-2">
+          <div class="field">
+            <label>Expense Type</label>
+            <div class="type-picker" id="picker-${e.id}">
+              <div class="type-trigger" id="trigger-${e.id}" onclick="toggleTypePicker(${e.id}, event)">
+                <span class="type-display ${e.type ? '' : 'placeholder'}" id="typeDisplay-${e.id}">${e.type || 'Select type…'}</span>
+                <input type="hidden" id="typeInput-${e.id}" data-id="${e.id}" data-field="type" value="${e.type}">
+                <span class="type-chevron">▾</span>
+              </div>
+              <div class="type-panel" id="panel-${e.id}"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Justification</label>
+            <select class="input" data-id="${e.id}" data-field="justification-select"
+              onchange="onJustSelectChange(${e.id}, this.value)">
+              <option value="">-- Select --</option>
+              <option value="Meals - Breakfast" ${e.justification==="Meals - Breakfast"?"selected":""}>Meals - Breakfast</option>
+              <option value="Meals - Lunch" ${e.justification==="Meals - Lunch"?"selected":""}>Meals - Lunch</option>
+              <option value="Meals - Dinner" ${e.justification==="Meals - Dinner"?"selected":""}>Meals - Dinner</option>
+              <option value="Meals - Snacks" ${e.justification==="Meals - Snacks"?"selected":""}>Meals - Snacks</option>
+              <option value="Meals - Coffee-Tea" ${e.justification==="Meals - Coffee-Tea"||e.justification==="Meals - Coffee-Tea"?"selected":""}>Meals - Coffee/Tea</option>
+              <option value="Uber Ride" ${e.justification==="Uber Ride"?"selected":""}>Uber Ride</option>
+              <option value="Lyft Ride" ${e.justification==="Lyft Ride"?"selected":""}>Lyft Ride</option>
+              <option value="Local Taxi" ${e.justification==="Local Taxi"?"selected":""}>Local Taxi</option>
+              <option value="__other__" ${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"selected":""}>Other…</option>
+            </select>
+            <input type="text" class="input" id="justOther-${e.id}" data-id="${e.id}" data-field="justification"
+              value="${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi"].includes(e.justification)?e.justification:""}"
+              placeholder="Describe the expense…"
+              style="margin-top:6px;display:${e.justification&&!["Meals - Breakfast","Meals - Lunch","Meals - Dinner","Meals - Snacks","Meals - Coffee-Tea","Uber Ride","Lyft Ride","Local Taxi",""].includes(e.justification)?"block":"none"};"
+              onkeydown="tabToAdd(event, ${e.id === lastId})">
+          </div>
         </div>
         <div class="meal-warning" id="mealWarn-${e.id}"></div>
 
-        <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
-          <button class="row-note-toggle" onclick="toggleRowNote(${e.id})" id="rowNoteToggle-${e.id}">
-            ${e.note ? '📝 ' + e.note.substring(0,30) + (e.note.length>30?'…':'') : '+ Add note'}
-          </button>
-        </div>
-        <div class="row-note-wrap ${e.note ? 'visible' : ''}" id="rowNoteWrap-${e.id}">
-          <textarea class="row-note-input" id="rowNote-${e.id}" rows="2"
-            placeholder="e.g. JFK to Manhattan, Joe's Diner Kingston…"
-            oninput="onNoteInput(${e.id}, this.value)">${e.note || ''}</textarea>
-        </div>
+          <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
+            <button class="row-note-toggle" onclick="toggleRowNote(${e.id})" id="rowNoteToggle-${e.id}">
+              ${e.note ? '📝 ' + e.note.substring(0,30) + (e.note.length>30?'…':'') : '+ Add note'}
+            </button>
+          </div>
+          <div class="row-note-wrap ${e.note ? 'visible' : ''}" id="rowNoteWrap-${e.id}">
+            <textarea class="row-note-input" id="rowNote-${e.id}" rows="2"
+              placeholder="e.g. JFK to Manhattan, Joe's Diner Kingston…"
+              oninput="onNoteInput(${e.id}, this.value)">${e.note || ''}</textarea>
+          </div>
 
-        <div style="margin-top:6px;">
-          <button class="row-currency-toggle" onclick="toggleRowCurrency(${e.id})">
-            ${e.rowCurrency ? '✎ Override: ' + e.rowCurrency : '+ Currency override'}
-          </button>
-          <div class="row-currency-override ${e.rowCurrency ? 'visible' : ''}" id="rowCurrencyPanel-${e.id}">
-            <div class="field">
-              <label>Currency</label>
-              <select class="input" id="rowCurrencySel-${e.id}" onchange="onRowCurrencyChange(${e.id}, this.value)">
-                <option value="">Use global</option>
-                <option value="USD"  ${e.rowCurrency==='USD'?'selected':''}>USD</option>
-                <option value="CAD"  ${e.rowCurrency==='CAD'?'selected':''}>CAD</option>
-                <option value="MXN"  ${e.rowCurrency==='MXN'?'selected':''}>MXN</option>
-                <option value="JMD"  ${e.rowCurrency==='JMD'?'selected':''}>JMD</option>
-                <option value="BRL"  ${e.rowCurrency==='BRL'?'selected':''}>BRL</option>
-                <option value="DOP"  ${e.rowCurrency==='DOP'?'selected':''}>DOP</option>
-                <option value="BMD"  ${e.rowCurrency==='BMD'?'selected':''}>BMD</option>
-                <option value="ARS"  ${e.rowCurrency==='ARS'?'selected':''}>ARS</option>
-                <option value="COP"  ${e.rowCurrency==='COP'?'selected':''}>COP</option>
-                <option value="CLP"  ${e.rowCurrency==='CLP'?'selected':''}>CLP</option>
-                <option value="PEN"  ${e.rowCurrency==='PEN'?'selected':''}>PEN</option>
-                <option value="TTD"  ${e.rowCurrency==='TTD'?'selected':''}>TTD</option>
-                <option value="BBD"  ${e.rowCurrency==='BBD'?'selected':''}>BBD</option>
-                <option value="XCD"  ${e.rowCurrency==='XCD'?'selected':''}>XCD</option>
-                <option value="EUR"  ${e.rowCurrency==='EUR'?'selected':''}>EUR</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Rate (to USD)</label>
-              <input type="number" step="0.000001" class="input" id="rowRateInp-${e.id}"
-                value="${e.rowRate || ''}" placeholder="0.000000"
-                oninput="onRowRateInput(${e.id}, this.value)">
-              <div class="row-rate-banner" id="rowRateBanner-${e.id}"></div>
-            </div>
-            <div class="field" style="flex:0;align-self:flex-end;">
-              <button class="btn btn-ghost btn-sm" onclick="clearRowCurrency(${e.id})">Remove</button>
+          <div style="margin-top:6px;">
+            <button class="row-currency-toggle" onclick="toggleRowCurrency(${e.id})">
+              ${e.rowCurrency ? '✎ Override: ' + e.rowCurrency : '+ Currency override'}
+            </button>
+            <div class="row-currency-override ${e.rowCurrency ? 'visible' : ''}" id="rowCurrencyPanel-${e.id}">
+              <div class="field">
+                <label>Currency</label>
+                <select class="input" id="rowCurrencySel-${e.id}" onchange="onRowCurrencyChange(${e.id}, this.value)">
+                  <option value="">Use global</option>
+                  <option value="USD"  ${e.rowCurrency==='USD'?'selected':''}>USD</option>
+                  <option value="CAD"  ${e.rowCurrency==='CAD'?'selected':''}>CAD</option>
+                  <option value="MXN"  ${e.rowCurrency==='MXN'?'selected':''}>MXN</option>
+                  <option value="JMD"  ${e.rowCurrency==='JMD'?'selected':''}>JMD</option>
+                  <option value="BRL"  ${e.rowCurrency==='BRL'?'selected':''}>BRL</option>
+                  <option value="DOP"  ${e.rowCurrency==='DOP'?'selected':''}>DOP</option>
+                  <option value="BMD"  ${e.rowCurrency==='BMD'?'selected':''}>BMD</option>
+                  <option value="ARS"  ${e.rowCurrency==='ARS'?'selected':''}>ARS</option>
+                  <option value="COP"  ${e.rowCurrency==='COP'?'selected':''}>COP</option>
+                  <option value="CLP"  ${e.rowCurrency==='CLP'?'selected':''}>CLP</option>
+                  <option value="PEN"  ${e.rowCurrency==='PEN'?'selected':''}>PEN</option>
+                  <option value="TTD"  ${e.rowCurrency==='TTD'?'selected':''}>TTD</option>
+                  <option value="BBD"  ${e.rowCurrency==='BBD'?'selected':''}>BBD</option>
+                  <option value="XCD"  ${e.rowCurrency==='XCD'?'selected':''}>XCD</option>
+                  <option value="EUR"  ${e.rowCurrency==='EUR'?'selected':''}>EUR</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Rate (to USD)</label>
+                <input type="number" step="0.000001" class="input" id="rowRateInp-${e.id}"
+                  value="${e.rowRate || ''}" placeholder="0.000000"
+                  oninput="onRowRateInput(${e.id}, this.value)">
+                <div class="row-rate-banner" id="rowRateBanner-${e.id}"></div>
+              </div>
+              <div class="field" style="flex:0;margin-top:20px;">
+                <button class="btn btn-ghost btn-sm" onclick="clearRowCurrency(${e.id})">Remove</button>
+              </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>`;
   }).join('');
 
   updateTotal();
 }
+
+function toggleCollapse(id, event) {
+  if (event) event.stopPropagation();
+  collectExpenses();
+  const exp = expenses.find(e => e.id === id);
+  if (exp) {
+    exp.isCollapsed = !exp.isCollapsed;
+    const rowEl = document.getElementById('expRow-' + id);
+    if (rowEl) {
+      if (exp.isCollapsed) rowEl.classList.add('collapsed');
+      else rowEl.classList.remove('collapsed');
+    }
+    const collapseBtn = document.getElementById('collapseAllBtn');
+    if (collapseBtn && expenses.length > 1) {
+      const anyExpanded = expenses.some(e => !e.isCollapsed);
+      collapseBtn.textContent = anyExpanded ? 'Collapse All' : 'Expand All';
+    }
+  }
+}
+
+function toggleAllExpenses() {
+  collectExpenses();
+  if (expenses.length === 0) return;
+  
+  // If ANY are expanded, collapse them all. Otherwise (all are collapsed), expand them all.
+  const anyExpanded = expenses.some(e => !e.isCollapsed);
+  const targetCollapse = anyExpanded;
+  
+  expenses.forEach(e => {
+    e.isCollapsed = targetCollapse;
+    const rowEl = document.getElementById('expRow-' + e.id);
+    if (rowEl) {
+      if (targetCollapse) rowEl.classList.add('collapsed');
+      else rowEl.classList.remove('collapsed');
+    }
+  });
+  
+  const collapseBtn = document.getElementById('collapseAllBtn');
+  if (collapseBtn) {
+    collapseBtn.textContent = targetCollapse ? 'Expand All' : 'Collapse All';
+  }
+  toast(targetCollapse ? 'All rows collapsed' : 'All rows expanded', 'green');
+}
+
+
 
 function updateTotal() {
   const globalRate = parseFloat(document.getElementById('rateEdit')?.value) || 1;
@@ -1351,99 +1461,7 @@ function hlType(text, q) {
   return escType(text.slice(0,i)) + '<mark>' + escType(text.slice(i,i+q.length)) + '</mark>' + escType(text.slice(i+q.length));
 }
 
-function renderTypePanel(expId, query) {
-  const panel   = document.getElementById('panel-' + expId);
-  const current = (document.getElementById('typeInput-' + expId) || {}).value || '';
-  const q       = (query || '').trim().toLowerCase();
-  let html      = '';
-
-  if (q) {
-    let any = false;
-    EXPENSE_CATEGORIES.forEach(cat => {
-      cat.items.forEach(item => {
-        if (item.toLowerCase().includes(q)) {
-          any = true;
-          html += `<div class="type-opt ${item===current?'selected':''}" onmousedown="selectType(${expId},'${item.replace(/'/g,"\'")}')">${hlType(item,q)}</div>`;
-        }
-      });
-    });
-    if (!any) html = '<div class="type-no-results">No matching types</div>';
-  } else {
-    EXPENSE_CATEGORIES.forEach(cat => {
-      html += `<div class="type-cat">${cat.label}</div>`;
-      cat.items.forEach(item => {
-        html += `<div class="type-opt ${item===current?'selected':''}" onmousedown="selectType(${expId},'${item.replace(/'/g,"\'")}')">${escType(item)}</div>`;
-      });
-    });
-  }
-  html += '<div style="padding:6px 12px 7px;font-size:10px;color:var(--ink-muted);border-top:1px solid var(--border);text-align:right;font-style:italic;">Types last updated: Feb 26, 2026</div>';
-  panel.innerHTML = html;
-  // scroll selected into view
-  setTimeout(() => {
-    const sel = panel.querySelector('.selected');
-    if (sel) sel.scrollIntoView({ block: 'nearest' });
-  }, 20);
-}
-
-function positionTypePanel(expId) {
-  const trigger = document.getElementById('trigger-' + expId);
-  const panel   = document.getElementById('panel-' + expId);
-  if (!trigger || !panel) return;
-  // getBoundingClientRect() is already viewport-relative — do NOT add scrollX/Y for fixed elements
-  const rect       = trigger.getBoundingClientRect();
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const panelH     = 260;
-  panel.style.width = rect.width + 'px';
-  panel.style.left  = rect.left + 'px';
-  if (spaceBelow >= Math.min(panelH, 160) || spaceBelow >= rect.top) {
-    panel.style.top    = (rect.bottom + 4) + 'px';
-    panel.style.bottom = 'auto';
-  } else {
-    panel.style.top    = 'auto';
-    panel.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
-  }
-}
-
-function openTypePicker(expId, event) {
-  if (event) event.stopPropagation();
-  if (openPickerId === expId) return;
-  closeAllTypePickers();
-  closeAllJustPickers(); // close just picker if open
-  openPickerId = expId;
-  const trigger = document.getElementById('trigger-' + expId);
-  const panel   = document.getElementById('panel-' + expId);
-  if (!trigger || !panel) return;
-  trigger.classList.add('open');
-  panel.classList.add('open');
-  positionTypePanel(expId);
-  renderTypePanel(expId, '');
-  // search is now inside the panel — no need to touch the hidden input
-}
-
-function closeTypePicker(expId) {
-  const trigger = document.getElementById('trigger-' + expId);
-  const panel   = document.getElementById('panel-' + expId);
-  const inp     = document.getElementById('typeInput-' + expId);
-  if (trigger) trigger.classList.remove('open');
-  if (panel)   panel.classList.remove('open');
-  // nothing to restore — value is in hidden input, display in span
-  if (openPickerId === expId) openPickerId = null;
-}
-
-function closeAllTypePickers() {
-  if (openPickerId !== null) closeTypePicker(openPickerId);
-}
-
-function toggleTypePicker(expId, event) {
-  if (event) event.stopPropagation();
-  if (openPickerId === expId) { closeTypePicker(expId); }
-  else { openTypePicker(expId, event); }
-}
-
-function onTypeSearch(expId) {
-  // Legacy — search now lives inside the panel
-  openTypePicker(expId);
-}
+// Redundant functions removed during cleanup.
 
 
 
@@ -1461,13 +1479,6 @@ function onJustKeydown(e, expId, isLast) {
 }
 
 // ── QUICK SCROLL ─────────────────────────────────────────────────────────────
-function updateScrollBtns() {
-  const el = document.getElementById('scrollBtns');
-  if (!el) return;
-  el.classList.toggle('visible', expenses.length >= 5);
-}
-
-
 // ── QUICK SCROLL ─────────────────────────────────────────────────────────────
 function updateScrollBtns() {
   const el = document.getElementById('scrollBtns');
